@@ -8,7 +8,7 @@ import re
 
 pyfiglet.print_figlet('GSV 2')
 
-TOKEN = 'MTIzMzc3NDExNjgzNDc3MDk0NA.G4g_q_.6_WrUfwSkpY2NFWmzQ-mwSylr5SdDJkuUtjy9s'
+TOKEN = ''
 bot = commands.Bot(command_prefix='!', debug_guilds=None, intents=discord.Intents.all())
 conn: aiosqlite.Connection = None
 
