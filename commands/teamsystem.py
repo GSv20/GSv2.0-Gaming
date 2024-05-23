@@ -108,21 +108,40 @@ class team(commands.Cog):
         guild = self.bot.get_guild(guild_id)
         if guild is None:
             return
+        tmod_role_id = 1052676334247219291
+        tmod_role = discord.utils.get(guild.roles, id=tmod_role_id)
+        tsup_role_id = 997504163544039484
+        tsup_role = discord.utils.get(guild.roles, id=tsup_role_id)
+        sup_role_id = 997504036041412619
+        sup_role = discord.utils.get(guild.roles, id=sup_role_id)
+        mod_role_id = 914076712373989386
+        mod_role = discord.utils.get(guild.roles, id=mod_role_id)
+        teamleitung_role_id = 1070336143373119593
+        teamleitung_role = discord.utils.get(guild.roles, id=teamleitung_role_id)
         special_role_id = 1044557317947019264
         special_role = discord.utils.get(guild.roles, id=special_role_id)
         if special_role is None:
             return
-        special_role_members = special_role.members
-
         evaluation_channel_id = 1073701381069869056
         evaluation_channel = self.bot.get_channel(evaluation_channel_id)
 
-        for member in special_role_members:
+        for member in special_role.members:
             self.cursor.execute("SELECT * FROM team_members WHERE user_id = ?", (member.id,))
             result = self.cursor.fetchone()
             if result:
                 user_id, message_count, strikes = result
                 user = self.bot.get_user(user_id)
+
+                for member in special_role.members:
+                    if special_role not in member.roles:
+                        roles_to_remove = [tmod_role, mod_role, teamleitung_role, tsup_role, sup_role]
+                        for role in roles_to_remove:
+                            if role in member.roles:
+                                await member.remove_roles(role)
+                if strikes > 2:  # Wenn Strikes größer als 2 sind, entferne die Rolle
+                    await member.remove_roles(special_role)
+                    self.cursor.execute("DELETE FROM team_members WHERE user_id = ?", (user_id,))
+                    continue
 
                 if message_count >= 150:
                     strikes = max(0, strikes - 1)
