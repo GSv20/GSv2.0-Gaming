@@ -1,23 +1,30 @@
+import asyncio
+
 import discord
 from discord.commands import Option
 from discord.ext import commands
 from discord.utils import format_dt
+from discord.ui import View, Button
 # nachrichten in embeds coden
-class Boostime(commands.Cog):
+
+
+class Boosttime(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         if before.premium_since is None and after.premium_since is not None:
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
             booster = after
-            nachricht = f"Vielen Dank, {booster.mention}, dass du den Server geboostet hast! Wir schätzen deine Unterstützung!"
-
-            channel_id = 1073701634863009933  # Hier die ID des channel einfügen
+            embed = discord.Embed(title='', description=f'Vielen Dank, {booster.mention}, dass du den Server geboostet hast! Wir schätzen deine Unterstützung!', color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            channel_id = 1073701634863009933
             channel = self.bot.get_channel(channel_id)
 
             if channel is not None:
-                await channel.send(nachricht)
+                await channel.send(file=file, embed=embed)
 
     @commands.slash_command(name="boostzeit", description="🚀〢 Zeigt dir deine Boostzeit an!")
     async def boostime(self, ctx, member: Option(discord.Member, "Wähle ein Server-Mitglied aus!", required=False) = None):
@@ -39,5 +46,23 @@ class Boostime(commands.Cog):
             await ctx.respond(
                 content=f"**`🚀` | {user.mention} hat das Server Boosting auf diesem Server {boostzeit_formatted} gestartet!**")
 
+
+class button(View):
+    def __init__(self, timeout=None):
+        super().__init__(timeout=timeout)
+
+        @discord.ui.button(label='join GSv clan', style=discord.ButtonStyle.blurple, custom_id='join')
+        async def action_button_pressed(self, button: Button, interaction: discord.Interaction):
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            role = 1026556535909929040
+            embed = discord.Embed(title='<a:party_blob:1073701093101551676> Willkommen im GSv clan', description='Du hast damit nun viele coole Extra rechte auf dem Discord und Zugriff zu exklusiven channels\n'
+                                                                                                                 'wir wünschen viel spaß <3', colour=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await interaction.user.add_roles(role)
+            asyncio.sleep(1)
+            await interaction.respond(file=file, embed=embed)
+
+
 def setup(bot):
-    bot.add_cog(Boostime(bot))
+    bot.add_cog(Boosttime(bot))
