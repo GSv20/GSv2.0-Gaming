@@ -1,5 +1,4 @@
 import asyncio
-
 import discord
 from discord.commands import Option
 from discord.ext import commands
@@ -30,12 +29,17 @@ class Boosttime(commands.Cog):
     async def boostime(self, ctx, member: Option(discord.Member, "Wähle ein Server-Mitglied aus!", required=False) = None):
         user = member or ctx.author
         boostzeit = user.premium_since
-
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+        color = 0x2596be
+        embed = discord.Embed(title='❌ | Error', description='**Bots können keine Server boosten!**', color=color)
+        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
         if user.bot:
-            await ctx.respond(content="**`❌` | Bots können keine Server boosten!**")
+            await ctx.respond(file=file, embed=embed)
             return
         if user not in ctx.guild.members:
-            await ctx.respond(content="**`❌` | Dieser User ist nicht auf diesem Server!**")
+            embed = discord.Embed(title='❌ | Error', description='', color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=embed)
             return
 
         if boostzeit is None:

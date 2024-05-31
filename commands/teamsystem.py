@@ -6,7 +6,7 @@ import sqlite3
 from discord.ext import commands, tasks
 
 
-class team(commands.Cog):
+class Team(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.conn = sqlite3.connect('Data/team_messages.db')
@@ -35,7 +35,12 @@ class team(commands.Cog):
     async def on_message(self, message):
         if message.author.bot:
             return
+
         special_role_id = 1044557317947019264
+
+        if message.guild is None:
+            return
+
         special_role = discord.utils.get(message.guild.roles, id=special_role_id)
         if special_role in message.author.roles:
             date = datetime.date.today().isoformat()
@@ -172,4 +177,4 @@ class team(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(team(bot))
+    bot.add_cog(Team(bot))
