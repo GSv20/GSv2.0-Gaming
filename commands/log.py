@@ -28,10 +28,6 @@ class log(commands.Cog):
         await self.log_on_guild_channel_delete(channel)
 
     @commands.Cog.listener()
-    async def on_member_remove(self, member):
-        await self.log_member_remove(member)
-
-    @commands.Cog.listener()
     async def on_member_join(self, member):
         await self.log_member_join(member)
 
