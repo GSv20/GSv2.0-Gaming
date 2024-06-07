@@ -50,8 +50,8 @@ class helpdesk_View(discord.ui.View):
         discord.SelectOption(label="Community Manager", value="cm"),
         discord.SelectOption(label="Teamleitung", value="tl"),
         discord.SelectOption(label="Moderator", value="mod"),
-        discord.SelectOption(label='Supporter', value="supp"),
-        discord.SelectOption(label='Leave', value='leave')]
+        discord.SelectOption(label='Supporter', value="supp", emoji='<:TA_Supporter:1075169298399633448>'),
+        discord.SelectOption(label='Leave', value='leave', emoji='🚧')]
 
     @discord.ui.select(
         placeholder="Helpdesk",

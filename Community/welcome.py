@@ -14,23 +14,19 @@ class Welcome(commands.Cog):
         view.add_item(button1)
         view.add_item(button2)
 
-        message = f'{member.mention} Willkommen von uns allen <3'
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+        color = 0x2596be
         embed = discord.Embed(
             title="Willkommen",
             description=f"Hey {member.mention}, Willkommen auf dem Server!\n",
-            color=discord.Color.dark_gold()
-        )
+            color=color)
         embed.add_field(name="Hilfe", value="Eine Einführung findest du hier: <#1073700811143647232>")
-
-        embed.set_image(
-            url="https://cdn.discordapp.com/attachments/1073711672717488129/1216626262207107103/GSV_verify.gif?ex=66011280&is=65ee9d80&hm=39fe6e5e75340beb22147915f7014b8cbfd7a33964227d623f27bcd603818872&")
-        embed.set_footer(text="Powered by GSV ⚡",
-                         icon_url="https://cdn.discordapp.com/attachments/1073711669731151904/1218393384897740830/GSV_Logo_new_.png?ex=66078043&is=65f50b43&hm=522d323764bdb16890d3fb1f6d748de45d0f1fa51d3194485ef5804a25b25f25&")
+        embed.set_image(url="https://cdn.discordapp.com/attachments/1073711672717488129/1216626262207107103/GSV_verify.gif?ex=66011280&is=65ee9d80&hm=39fe6e5e75340beb22147915f7014b8cbfd7a33964227d623f27bcd603818872&")
+        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
 
         role_ids = [1216629193090007071, 1014881097064132649, 1014881106018979870, 1014881110695616673,
                     1017133211215745135, 1205647946503290930, 1072233630019113060, 1014881114491461632,
-                    1014881119990190122, 1014881120921321543, 1052621721296969828]  #
-
+                    1014881119990190122, 1014881120921321543, 1052621721296969828, 1248706499539238956]
         for role_id in role_ids:
             role = member.guild.get_role(role_id)
             if role:
@@ -39,21 +35,20 @@ class Welcome(commands.Cog):
                 print(f"Rolle mit ID {role_id} nicht gefunden.")
 
         channel = await self.bot.fetch_channel(1073701634863009933)  # Channel ID vom Willkommenschat
-        await channel.send(embed=embed, view=view)
+        await channel.send(file=file, embed=embed, view=view)
         print(f"{member} joined the Server")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         user = member.name
-        guild_name = member.guild.name
-        channel = self.bot.get_channel(1217109251395158127)  # Ersetze YOUR_CHANNEL_ID durch die ID des gewünschten Kanals
-
-        await channel.send(f"{user} hat den Server {guild_name} leider verlassen... Ihr/Sein Pech.")
-
         try:
             dm_channel = await member.create_dm()
-            await dm_channel.send(
-                'Hey hey\nmich hast du save schon gesehen, Entschuldige das ich dich einfach so anschreibe\ndu hast unseren Gaming Server verlassen, unser Team interessiert sich persönlich dafür\nund wäre dir mehr als Dankbar wenn du hier ein Feedback hinterlässt\n<3\nhttps://discord.gg/xexvmgp6qu\n\nAnsonnsten nochmal SRY für die Störung und danke fürs lesen')
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+
+            re_embed = discord.Embed(title='<:nope:1073700944941957291> | Goodbye ', description='Hey hey\nmich hast du save schon gesehen, Entschuldige das ich dich einfach so anschreibe\ndu hast unseren Gaming Server verlassen, unser Team interessiert sich persönlich dafür\nund wäre dir mehr als Dankbar wenn du hier ein Feedback hinterlässt\n<3\nhttps://discord.gg/xexvmgp6qu\n\nAnsonnsten nochmal SRY für die Störung und danke fürs lesen', color=color)
+            re_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await dm_channel.send(file=file, embed=re_embed)
             print(f'DM erfolgreich an {user} gesendet')
         except discord.Forbidden:
             print(f'Konnte keine Direktnachricht an {user} senden.')
