@@ -40,7 +40,7 @@ class GPT(commands.Cog):
                 conversation.append({"role": "user", "content": text})
 
                 result = openai.ChatCompletion.create(
-                    model="gpt-4",
+                    model="gpt-4-1106-preview",
                     messages=[{"role": "system", "content": charakter}] + conversation,
                     max_tokens=250)
 
