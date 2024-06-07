@@ -6,7 +6,7 @@ class Special(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(description='📝┃Sende die Liste der Server-Emojis')
-    async def emojilist(self, interaction: discord.Interaction):
+    async def emojilist(self, ctx: discord.ApplicationContext):
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         color = 0x2596be
         embed = discord.Embed(
@@ -15,26 +15,28 @@ class Special(commands.Cog):
             color=color)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
 
-        if len(interaction.guild.emojis) > 50:
+        if len(ctx.guild.emojis) > 50:
             embed_2 = discord.Embed(
                 title='❌ | Error | ❌',
                 description='Anscheinend gibt es zu viele Emojis auf diesem Server :( \nIch bin dadurch leider etwas eingeschränkt',
                 color=discord.Color.dark_red())
             embed_2.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            await interaction.response.send_message(file=file, embed=embed_2, delete_after=120)
+            await ctx.respond(file=file, embed=embed_2, delete_after=120)
         else:
-            for emoji in interaction.guild.emojis:
+            for emoji in ctx.guild.emojis:
                 embed.description += f'{emoji} - `{emoji}`\n'
-            await interaction.response.send_message(file=file, embed=embed, delete_after=120)
+            await ctx.respond(file=file, embed=embed, delete_after=120)
 
     @commands.slash_command(description='.')
     @commands.has_permissions(administrator=True)
-    async def coming_soon(self, ctx):
-        message = 'coming soon <a:Loading:1073700976000782396>'
-        await ctx.respond(message)
+    async def coming_soon(self, ctx: discord.ApplicationContext):
+        message2 = 'erfolgreich gesendet'
+        message = '# Coming Soon <a:Loading:1073700976000782396>'
+        await ctx.respond(message2)
+        await ctx.send(message)
 
     @coming_soon.error
-    async def coming_soon_error(self, ctx, error):
+    async def coming_soon_error(self, ctx: discord.ApplicationContext, error):
         if isinstance(error, commands.MissingPermissions):
             file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             em = discord.Embed(title=' ❌| Error | ❌',
@@ -47,7 +49,7 @@ class Special(commands.Cog):
     @commands.slash_command(description='.')
     @commands.has_any_role(1044557317947019264)
     @commands.cooldown(1, 3600)
-    async def deathchat(self, ctx):
+    async def deathchat(self, ctx: discord.ApplicationContext):
         message = '<@&1014881120921321543>'
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         color = 0x2596be
@@ -61,7 +63,7 @@ class Special(commands.Cog):
         await ctx.respond(file=file, embed=embed)
 
     @deathchat.error
-    async def deathchat_error(self, ctx, error):
+    async def deathchat_error(self, ctx: discord.ApplicationContext, error):
         if isinstance(error, commands.MissingRole):
             file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             em = discord.Embed(title=' ❌| Error | ❌',
