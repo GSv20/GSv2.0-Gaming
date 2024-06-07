@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import openai
 
-openai.api_key = ""
 
 
 class GPT(commands.Cog):
