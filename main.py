@@ -36,7 +36,7 @@ async def on_ready():
     bot.add_view(TutorialView())
     bot.add_view(Ticketweiterleitung())
     bot.add_view(Ticketmenu())
-    await bot.change_presence(activity=discord.Game(name='GSv Gaming 💕'), status=discord.Status.dnd)
+    await bot.change_presence(activity=discord.Game(name='https://gsv2.dev'), status=discord.Status.dnd)
     print(f"Logged in as {bot.user}")
 
 
