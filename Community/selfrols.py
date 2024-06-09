@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord.commands import slash_command, Option
 import asyncio
-#embeds anpassen bei den hinzugefügten rollen
+
 
 class role(commands.Cog):
     def __init__(self, bot):
@@ -17,79 +17,117 @@ class role(commands.Cog):
         self.bot.add_view(alter())
         self.bot.add_view(farbenauswahl())
         self.bot.add_view(pingrollen())
-        self.bot.add_view(extras())
 
-    @slash_command(discription="Schicke das rollen menü in einen channel")
-    @commands.guild_only()
+    @slash_command(description="Schicke eine Event-Nachricht ab")
     @commands.has_permissions(administrator=True)
-    async def selfrols(self, ctx, channel: Option(discord.TextChannel, "Der Channel in dem das Menü gesendet werden soll", required=True)):
-        link = 'https://discord.com/channels/913082943495344179/1073993336890871848/1241777968783818854'
-        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-        color = 0x2596be
-        embed = discord.Embed(title="Plattformen", description='Wähle deine Plattform bzw. Plattformen\n'
-                                                                '- Damit die anderen User bescheid wissen wie sie mit dir spielen können', color=color)
-        embed.set_image(url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031589357588500/Plattformen.png?ex=661c0340&is=66098e40&hm=562fdcc3d363a13b07e2557e81a8a75b78be87b0443da2643f88f894ad687785&')
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+    async def selfrole(self, ctx,
+                       text: Option(str, "Wähle einen Text aus", choices=[
+                           "Sexualität",
+                           "Geschlechtsauswahl",
+                           "Beziehungsstatus",
+                           "Alter",
+                           "Farbenauswahl",
+                           "Pingrollen",
+                           "Plattformen"
+                       ], required=True),
+                       channel: Option(discord.TextChannel, "Der Channel, in dem das Menü gesendet werden soll",
+                                       required=False),):
+        if channel is None:
+            channel = ctx.channel
 
-        embed2 = discord.Embed(title="Geschlechtsauswahl", description='Du musst dies nicht auswählen\n'
-                                                                        'Es ist Freiwillig!', color=color)
-        embed2.set_image(url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031651089354782/Geschlechtsauswahl.png?ex=661c034f&is=66098e4f&hm=5e4de732423c9e266495ae32a3856c78298cb59d6ddbd8a1ee280e87f3b9fc46&')
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
-        embed3 = discord.Embed(title="Sexualität", description='Freiwillige Angabe\n'
-                                                                'Wenn du nicht willst musst du nicht', color=color)
-        embed3.set_image(url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031717015420938/sexualitat.png?ex=661c035e&is=66098e5e&hm=68903262ac86613f459ce8c4ab4840aaa1ceccd444cee0bfc3ef083b44c067af&')
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
-        embed4 = discord.Embed(title="Beziehungsstatus", description="Angaben sind Freiwillig", color=color)
-        embed4.set_image(url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031757754433657/beziehungsstatus.jpeg?ex=661c0368&is=66098e68&hm=1a31554d71e4c23e5e59b7cf064a1b7a12006166775150d4dd98613bcc6d646d&')
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
-        embed5 = discord.Embed(title="Alter", description="Gebe hier dein Alter an", color=color)
-        embed5.set_image(url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031776511623188/Alter.jpeg?ex=661c036c&is=66098e6c&hm=154fa81a46eccf2dabbab9432a023e573dec81b2434c05ff809d2332951f34f8&')
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
-        embed6 = discord.Embed(title="Farbenauswahl", description="Wähle unten im menü die rolle aus", color=color)
-        embed6.set_image(url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031796535099462/Farbenauswahl.jpeg?ex=661c0371&is=66098e71&hm=4c41fc30603056ac318fb2a45f2c8ea372b3b91a9eaa6de3c7e4d2a3130f138e&')
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
-        embed7 = (discord.Embed(title='Pingrollen', description='', colour=color))
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
-        embed8 = (discord.Embed(title='Extras', description='Unten findest du noch ein paar coole Extras\n'
-                                                            f'klicke [hier]({link})'
-                                                            '', colour=color))
-        embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-        channel_id = self.bot.get_channel(channel)
-        await ctx.respond("Selfrols sind Aktiv", ephemeral=True)
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed, view=plattformen())
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed2, view=geschlechtsauswahl())
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed3, view=())
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed4, view=())
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed5, view=())
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed6, view=())
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed7, view=())
-        await asyncio.sleep(2)
-        await ctx.channel.send(file=file, embed=embed8, view=())
-
-    @selfrols.error
-    async def selfrols_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
+        if text == "Sexualität":
             file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             color = 0x2596be
-            em = discord.Embed(title='<:nope:1073700944941957291> | Error',
-                description="Du bist nicht berechtigt, diesen command auszuführen\n\nMissing Permissions: Administrator",
+            embed = discord.Embed(
+                title="Sexualität",
+                description="Freiwillige Angabe\nWenn du nicht willst, musst du nicht",
                 color=color)
-            em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            await ctx.respond(file=file, embed=em)
-            print(f'{ctx.author} hat versucht /selfrols auszuführen')
+            embed.set_image(
+                url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031717015420938/sexualitat.png')
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = sexualitat()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Geschlechtsauswahl":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(title="Geschlechtsauswahl", description='Du musst dies nicht auswählen\n'
+                                                                           'Es ist Freiwillig!', color=color)
+            embed.set_image(
+                url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031651089354782/Geschlechtsauswahl.png?ex=661c034f&is=66098e4f&hm=5e4de732423c9e266495ae32a3856c78298cb59d6ddbd8a1ee280e87f3b9fc46&')
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = geschlechtsauswahl()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Beziehungsstatus":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Beziehungsstatus",
+                description="Angaben sind freiwillig",
+                color=color)
+            embed.set_image(
+                url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031757754433657/beziehungsstatus.jpeg')
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = beziehungsstatus()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Alter":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Alter",
+                description="Gebe hier dein Alter an",
+                color=color)
+            embed.set_image(
+                url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031776511623188/Alter.jpeg')
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = alter()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Farbenauswahl":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Farbenauswahl",
+                description="Wähle unten im Menü die Rolle aus",
+                color=color)
+            embed.set_image(
+                url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031796535099462/Farbenauswahl.jpeg')
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = farbenauswahl()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Pingrollen":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Pingrollen",
+                description="Drücke [hier](https://discord.com/channels/913082943495344179/1073993336890871848/1249179181070290966) um zum anfang der Selfrols zu gelangen",
+                color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = pingrollen()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Plattformen":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Plattformen",
+                description='Wähle deine Plattform bzw. Plattformen\n- Damit die anderen User Bescheid wissen, wie sie mit dir spielen können',
+                color=color)
+            embed.set_image(
+                url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031589357588500/Plattformen.png')
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = plattformen()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
 
 
 def setup(bot):
@@ -105,63 +143,34 @@ class plattformen(discord.ui.View):
         discord.SelectOption(label="Playstation", value="playstation"),
         discord.SelectOption(label="Xbox", value="xbox"),
         discord.SelectOption(label="Switch", value="switch"),
-        discord.SelectOption(label='Handy', value='handy')]
+        discord.SelectOption(label="Handy", value="handy")
+    ]
 
     @discord.ui.select(
         placeholder="Wähle deine Plattform aus",
         min_values=1,
         max_values=5,
         options=options,
-        custom_id="role_select")
+        custom_id="plattform_select"
+    )
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
-        role_id = 1014881098884456508
-        role_id2 = 1014881100490883072
-        role_id3 = 1014881101740781599
-        role_id4 = 1014881103204597800
-        role_id5 = 1014881104429326356
+        roles = {
+            "pc": 1014881098884456508,
+            "playstation": 1014881100490883072,
+            "xbox": 1014881101740781599,
+            "switch": 1014881103204597800,
+            "handy": 1014881104429326356
+        }
+        role_id = roles[selected_value]
         role = interaction.guild.get_role(role_id)
-        role2 = interaction.guild.get_role(role_id2)
-        role3 = interaction.guild.get_role(role_id3)
-        role4 = interaction.guild.get_role(role_id4)
-        role5 = interaction.guild.get_role(role_id5)
 
-        message = ""
-        if selected_value == "pc":
-            if role in interaction.user.roles:
-                await interaction.user.remove_roles(role)
-                message = f"Dir wurde die Rolle {role.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role)
-                message = f"Dir wurde {role.mention} hinzugefügt"
-        elif selected_value == "playstation":
-            if role2 in interaction.user.roles:
-                await interaction.user.remove_roles(role2)
-                message = f"Dir wurde die Rolle {role2.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role2)
-                message = f"Dir wurde {role2.mention} hinzugefügt"
-        elif selected_value == "xbox":
-            if role3 in interaction.user.roles:
-                await interaction.user.remove_roles(role3)
-                message = f"Dir wurde die Rolle {role3.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role3)
-                message = f"Dir wurde {role3.mention} hinzugefügt"
-        elif selected_value == "switch":
-            if role3 in interaction.user.roles:
-                await interaction.user.remove_roles(role4)
-                message = f"Dir wurde die Rolle {role4.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role4)
-                message = f"Dir wurde {role4.mention} hinzugefügt"
-        elif selected_value == "handy":
-            if role4 in interaction.user.roles:
-                await interaction.user.remove_roles(role5)
-                message = f"Dir wurde die Rolle {role4.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role5)
-                message = f"Dir wurde {role5.mention} hinzugefügt"
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
 
         await interaction.response.send_message(message, ephemeral=True)
 
@@ -171,50 +180,39 @@ class geschlechtsauswahl(discord.ui.View):
         super().__init__(timeout=None)
 
     options = [
-        discord.SelectOption(label="Männlich", value="männlich"),
-        discord.SelectOption(label="Weiblich", value="weiblich"),
-        discord.SelectOption(label="Divers", value="divers")
+        discord.SelectOption(label="Männlich ", value="mann"),
+        discord.SelectOption(label="Weiblich ", value="weiblich"),
+        discord.SelectOption(label="Divers ", value="divers"),
+
     ]
 
     @discord.ui.select(
         placeholder="Wähle dein Geschlecht aus",
         min_values=1,
-        max_values=3,
+        max_values=5,
         options=options,
-        custom_id="role_select"
+        custom_id="geschlecht_select"
     )
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
-        role_id = 1014881107461799966
-        role_id2 = 1014881108195807403
-        role_id3 = 1014881109596708955
+        roles = {
+            "mann": 1014881107461799966,
+            "weiblich": 1014881108195807403,
+            "divers": 1014881109596708955,
+        }
+        role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
-        role2 = interaction.guild.get_role(role_id2)
-        role3 = interaction.guild.get_role(role_id3)
 
-        message = ""
+        if role is None:
+            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+            return
 
-        if selected_value == "männlich":
-            if role in interaction.user.roles:
-                await interaction.user.remove_roles(role)
-                message = f"Dir wurde die Rolle {role.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role)
-                message = f"Dir wurde {role.mention} hinzugefügt"
-        elif selected_value == "weiblich":
-            if role2 in interaction.user.roles:
-                await interaction.user.remove_roles(role2)
-                message = f"Dir wurde die Rolle {role2.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role2)
-                message = f"Dir wurde {role2.mention} hinzugefügt"
-        elif selected_value == "divers":
-            if role3 in interaction.user.roles:
-                await interaction.user.remove_roles(role3)
-                message = f"Dir wurde die Rolle {role3.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role3)
-                message = f"Dir wurde {role3.mention} hinzugefügt"
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
 
         await interaction.response.send_message(message, ephemeral=True)
 
@@ -224,50 +222,52 @@ class sexualitat(discord.ui.View):
         super().__init__(timeout=None)
 
     options = [
-        discord.SelectOption(label="Männlich", value="männlich"),
-        discord.SelectOption(label="Weiblich", value="weiblich"),
-        discord.SelectOption(label="Divers", value="divers")
+        discord.SelectOption(label="Hetero ", value="hetero"),
+        discord.SelectOption(label="Lesbisch ", value="lesbisch"),
+        discord.SelectOption(label="Schwul ", value="schwul"),
+        discord.SelectOption(label="Bisexuell ", value="bisexuell"),
+        discord.SelectOption(label="Queer ", value="queer"),
+        discord.SelectOption(label="Transsexuell/Transgender ", value="t/t"),
+        discord.SelectOption(label="Intersexuell ", value="intersexuell"),
+        discord.SelectOption(label="Two-Spirits/Double Soul ", value="tsd"),
+        discord.SelectOption(label="Pan Sexuell ", value="pan"),
+        discord.SelectOption(label="Asexuell ", value="asexuell"),
     ]
 
     @discord.ui.select(
-        placeholder="Wähle dein Geschlecht aus",
+        placeholder="Wähle deine Sexualität aus",
         min_values=1,
-        max_values=3,
+        max_values=5,
         options=options,
-        custom_id="role_select"
+        custom_id="sexualitat_select"
     )
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
-        role_id = 1014881107461799966
-        role_id2 = 1014881108195807403
-        role_id3 = 1014881109596708955
+        roles = {
+            "hetero": 1074021595624001606,
+            "lesbisch": 1052166815394041906,
+            "schwul": 1052166937523793982,
+            "bisexuell": 1052167193502158862,
+            "queer": 1052167251593269249,
+            "t/t": 1052167260611026995,
+            "intersexuell": 1052167367905513572,
+            "tsd": 1052167940721614890,
+            "pan": 1069675619060813894,
+            "asexuell": 1052167858051874816
+        }
+        role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
-        role2 = interaction.guild.get_role(role_id2)
-        role3 = interaction.guild.get_role(role_id3)
 
-        message = ""
+        if role is None:
+            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+            return
 
-        if selected_value == "männlich":
-            if role in interaction.user.roles:
-                await interaction.user.remove_roles(role)
-                message = f"Dir wurde die Rolle {role.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role)
-                message = f"Dir wurde {role.mention} hinzugefügt"
-        elif selected_value == "weiblich":
-            if role2 in interaction.user.roles:
-                await interaction.user.remove_roles(role2)
-                message = f"Dir wurde die Rolle {role2.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role2)
-                message = f"Dir wurde {role2.mention} hinzugefügt"
-        elif selected_value == "divers":
-            if role3 in interaction.user.roles:
-                await interaction.user.remove_roles(role3)
-                message = f"Dir wurde die Rolle {role3.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role3)
-                message = f"Dir wurde {role3.mention} hinzugefügt"
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
 
         await interaction.response.send_message(message, ephemeral=True)
 
@@ -277,49 +277,208 @@ class beziehungsstatus(discord.ui.View):
         super().__init__(timeout=None)
 
     options = [
-        discord.SelectOption(label="Männlich", value="männlich"),
-        discord.SelectOption(label="Weiblich", value="weiblich"),
-        discord.SelectOption(label="Divers", value="divers")
+        discord.SelectOption(label="Verliebt ", value="verliebt"),
+        discord.SelectOption(label="Vergeben  ", value="vergeben "),
+        discord.SelectOption(label="Verlobt ", value="verlobt"),
+        discord.SelectOption(label="Verheiratet ", value="verheiratet"),
+        discord.SelectOption(label="Single", value="Single"),
+        discord.SelectOption(label="Kompliziert ", value="kompliziert"),
+
     ]
 
     @discord.ui.select(
-        placeholder="Wähle dein Geschlecht aus",
+        placeholder="Wähle dein beziehungsstatus aus",
         min_values=1,
-        max_values=3,
+        max_values=5,
         options=options,
-        custom_id="role_select"
+        custom_id="beziehungsstatus_select"
     )
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
-        role_id = 1014881107461799966
-        role_id2 = 1014881108195807403
-        role_id3 = 1014881109596708955
+        roles = {
+            "verliebt": 1097841875550994573,
+            "vergeben": 1014881111677079603,
+            "verlobt": 1097875012595224576,
+            "verheiratet": 1097874957188464810,
+            "Single": 1014881112339787808,
+            "kompliziert": 1014881113619038359,
+        }
+        role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
-        role2 = interaction.guild.get_role(role_id2)
-        role3 = interaction.guild.get_role(role_id3)
 
-        message = ""
+        if role is None:
+            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+            return
 
-        if selected_value == "männlich":
-            if role in interaction.user.roles:
-                await interaction.user.remove_roles(role)
-                message = f"Dir wurde die Rolle {role.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role)
-                message = f"Dir wurde {role.mention} hinzugefügt"
-        elif selected_value == "weiblich":
-            if role2 in interaction.user.roles:
-                await interaction.user.remove_roles(role2)
-                message = f"Dir wurde die Rolle {role2.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role2)
-                message = f"Dir wurde {role2.mention} hinzugefügt"
-        elif selected_value == "divers":
-            if role3 in interaction.user.roles:
-                await interaction.user.remove_roles(role3)
-                message = f"Dir wurde die Rolle {role3.mention} entfernt"
-            else:
-                await interaction.user.add_roles(role3)
-                message = f"Dir wurde {role3.mention} hinzugefügt"
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
+
+        await interaction.response.send_message(message, ephemeral=True)
+
+
+class alter(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    options = [
+        discord.SelectOption(label="Unter 18 ", value="18-"),
+        discord.SelectOption(label="18-20  ", value="18"),
+        discord.SelectOption(label="Über 20 ", value="20+"),
+        discord.SelectOption(label="Über 30 ", value="30+"),
+        discord.SelectOption(label="Über 40", value="40+"),
+        discord.SelectOption(label="Mehr als 50 ", value="50+"),
+
+    ]
+
+    @discord.ui.select(
+        placeholder="Wähle dein alter aus",
+        min_values=1,
+        max_values=5,
+        options=options,
+        custom_id="alter_select"
+    )
+    async def callback(self, select, interaction: discord.Interaction):
+        selected_value = select.values[0]
+        roles = {
+            "18-": 1205648088832679966,
+            "18": 1205648589980704788,
+            "20+": 1205648736504512523,
+            "30+": 1205648809481212054,
+            "40+": 1205648843044159508,
+            "50+": 1205648884135624704,
+        }
+        role_id = roles.get(selected_value)
+        role = interaction.guild.get_role(role_id)
+
+        if role is None:
+            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+            return
+
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
+
+        await interaction.response.send_message(message, ephemeral=True)
+
+
+class farbenauswahl(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    options = [
+        discord.SelectOption(label="Schwarz ", value="schwarz"),
+        discord.SelectOption(label="Weiß", value="weiß"),
+        discord.SelectOption(label="Grau", value="grau"),
+        discord.SelectOption(label="Neon Blau", value="nblau"),
+        discord.SelectOption(label="Lila", value="lila"),
+        discord.SelectOption(label="Dunkel Lila", value="dlila"),
+        discord.SelectOption(label="Pink", value="pink"),
+        discord.SelectOption(label="Neon Pink", value="npink"),
+        discord.SelectOption(label="Braun", value="braun"),
+        discord.SelectOption(label="Gelb", value="gelb"),
+        discord.SelectOption(label="Hellbraun", value="hbraun"),
+        discord.SelectOption(label="Orange", value="orange"),
+        discord.SelectOption(label="Rot", value="rot"),
+        discord.SelectOption(label="Blau", value="blau"),
+        discord.SelectOption(label="Dunkel Blau", value="dblau"),
+        discord.SelectOption(label="Neon Grün", value="ngrün"),
+        discord.SelectOption(label="Türkis", value="türkis"),
+        discord.SelectOption(label="Dunkelgrün", value="dgrün"),
+
+    ]
+
+    @discord.ui.select(
+        placeholder="Wähle deine Lieblingsfarbe aus",
+        min_values=1,
+        max_values=5,
+        options=options,
+        custom_id="farbenauswahl_select"
+    )
+    async def callback(self, select, interaction: discord.Interaction):
+        selected_value = select.values[0]
+        roles = {
+            "schwarz": 1013601269828550666,
+            "weiß": 1013601430533320785,
+            "grau": 1013601666030903347,
+            "nblau": 1013601113519439954,
+            "lila": 1018236009382678618,
+            "dlila": 1248605320503230505,
+            "pink": 1013601424061517845,
+            "npink": 1018273857355927552,
+            "braun": 1013602130952720394,
+            "gelb": 1013600724019593246,
+            "hbraun": 1013602047150526505,
+            "orange": 1013600724023791666,
+            "rot": 1000149758175891486,
+            "blau": 1013607823717969980,
+            "dblau": 1013601776945074228,
+            "ngrün": 1018473322796822540,
+            "türkis": 1013600625973538816,
+            "dgrün": 1028000709414752398,
+        }
+        role_id = roles.get(selected_value)
+        role = interaction.guild.get_role(role_id)
+
+        if role is None:
+            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+            return
+
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
+
+        await interaction.response.send_message(message, ephemeral=True)
+
+
+class pingrollen(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    options = [
+        discord.SelectOption(label="Night Ping ", value="nping"),
+        discord.SelectOption(label="Death Chat ping", value="dcp"),
+        discord.SelectOption(label="News Ping", value="np"),
+        discord.SelectOption(label="Voice Ping", value="voice"),
+        discord.SelectOption(label="YouTube Ping", value="yt")
+
+    ]
+
+    @discord.ui.select(
+        placeholder="Pings an / abstellten",
+        min_values=1,
+        max_values=5,
+        options=options,
+        custom_id="farbenauswahl_select")
+    async def callback(self, select, interaction: discord.Interaction):
+        selected_value = select.values[0]
+        roles = {
+            "nping": 1014881120921321543,
+            "dcp": 1013601430533320785,
+            "np": 1028012239300612176,
+            "voice": 1248706499539238956,
+            "yt": 1109457019037036684,}
+        role_id = roles.get(selected_value)
+        role = interaction.guild.get_role(role_id)
+
+        if role is None:
+            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+            return
+
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
 
         await interaction.response.send_message(message, ephemeral=True)

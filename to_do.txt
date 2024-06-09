@@ -1,1 +1,6 @@
 in *counting reincoden das man von vorn anfängt zu zählen sobald man sich verzählt oder 2 mal hintereinander zählt
+
+cooldown im teampanel, bei den buttons (ban button admin funktion)
+teampanel, unwarn button umcoden (daten aus der db ändern)
+
+selfrols, geschlechtsauswahl den fehler beheben

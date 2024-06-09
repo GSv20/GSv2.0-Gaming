@@ -6,12 +6,12 @@ from discord.ui import Button
 
 
 class Ticket(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.client.add_view(VIEWNAME())
+        self.bot.add_view(VIEWNAME())
 
     @slash_command(description='sende die Ticket Nachricht')
     @commands.has_permissions(administrator=True)
@@ -28,7 +28,7 @@ class Ticket(commands.Cog):
             text="Powered by GSV ⚡")
         await ctx.respond('Ticket Message wurde gesendet', ephemeral=True)
 
-        channel = self.client.get_channel(1073700885886152837)  # füge die Channel ID ein, wo die Ticket Nachricht mit dem Dropdown Menu geschickt werden soll
+        channel = self.bot.get_channel(1073700885886152837)  # füge die Channel ID ein, wo die Ticket Nachricht mit dem Dropdown Menu geschickt werden soll
         await channel.send(embed=em, view=VIEWNAME())
 
     @tickets.error
@@ -43,8 +43,8 @@ class Ticket(commands.Cog):
             print(f'{ctx.author.name} hat versucht /tickets auszuführen')
 
 
-def setup(client):
-    client.add_cog(Ticket(client))
+def setup(bot):
+    bot.add_cog(Ticket(bot))
 
 
 options = [
@@ -67,14 +67,14 @@ class VIEWNAME(discord.ui.View):
     )
     async def select_callback(self, select, interaction):
         member = interaction.user
-        client = interaction.client
+        bot = interaction.bot
 
         if '1' in interaction.data['values']:
-            cat = client.get_channel(1073702320870793328)  # füge die Categorie ID ein, wo die Tickets erstellt werden sollen
+            cat = bot.get_channel(1073702320870793328)  # füge die Categorie ID ein, wo die Tickets erstellt werden sollen
 
             ticket_channel = await interaction.guild.create_text_channel(f'ticket-{interaction.user.name}',
                                                                          category=cat,
-                                                                         topic=f'Ticket by {interaction.user} \nClient-ID: {interaction.user.id}')
+                                                                         topic=f'Ticket by {interaction.user} \nbot-ID: {interaction.user.id}')
             await ticket_channel.set_permissions(interaction.user, send_messages=True, read_messages=True,
                                                  view_channel=True)
             await ticket_channel.set_permissions(interaction.guild.default_role, view_channel=False)
@@ -171,11 +171,11 @@ class VIEWNAME(discord.ui.View):
                 await ticket_channel.send(embed=em2E)
 
         if '2' in interaction.data['values']:
-            cat = client.get_channel(1073702320870793328)  # füge die Categorie ID ein, wo die Tickets erstellt werden sollen
+            cat = bot.get_channel(1073702320870793328)  # füge die Categorie ID ein, wo die Tickets erstellt werden sollen
 
             ticket_channel = await interaction.guild.create_text_channel(f'ticket-{interaction.user.name}',
                                                                          category=cat,
-                                                                         topic=f'Ticket by {interaction.user} \nClient-ID: {interaction.user.id}')
+                                                                         topic=f'Ticket by {interaction.user} \nbot-ID: {interaction.user.id}')
             await ticket_channel.set_permissions(interaction.user, send_messages=True, read_messages=True,
                                                  view_channel=True)
             await ticket_channel.set_permissions(interaction.guild.default_role, view_channel=False)
@@ -265,11 +265,11 @@ class VIEWNAME(discord.ui.View):
                 await ticket_channel.send(embed=em2E)
 
         if '3' in interaction.data['values']:
-            cat = client.get_channel(1073702320870793328)  # füge die Categorie ID ein, wo die Tickets erstellt werden sollen
+            cat = bot.get_channel(1073702320870793328)  # füge die Categorie ID ein, wo die Tickets erstellt werden sollen
 
             ticket_channel = await interaction.guild.create_text_channel(f'ticket-{interaction.user.name}',
                                                                          category=cat,
-                                                                         topic=f'Ticket by {interaction.user} \nClient-ID: {interaction.user.id}')
+                                                                         topic=f'Ticket by {interaction.user} \nbot-ID: {interaction.user.id}')
             await ticket_channel.set_permissions(interaction.user, send_messages=True, read_messages=True,
                                                  view_channel=True)
             await ticket_channel.set_permissions(interaction.guild.default_role, view_channel=False)

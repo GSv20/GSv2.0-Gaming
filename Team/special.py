@@ -104,7 +104,7 @@ class Special(commands.Cog):
     async def coming_soon(self, ctx: discord.ApplicationContext):
         message2 = 'erfolgreich gesendet'
         message = '# Coming Soon <a:Loading:1073700976000782396>'
-        await ctx.respond(message2)
+        await ctx.respond(message2, ephemeral=True)
         await ctx.send(message)
 
     @coming_soon.error
