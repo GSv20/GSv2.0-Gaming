@@ -4,10 +4,10 @@ from discord.ext import commands, tasks
 class VanityRoleCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.GUILD = 913082943495344179  # Server, auf dem der Bot die Rolle vergeben soll
-        self.STATUS_ROLE = 944555097390723112  # Rolle die vergeben werden soll, wenn der User den entsprechenden Status hat
-        self.STATUS_TEXT = "gsv2.dev"  # Status, den der User haben muss
-        self.LOG_CHANNEL = 1218317295345074298  # In dem Channel wird geloggt
+        self.GUILD = 913082943495344179
+        self.STATUS_ROLE = 944555097390723112
+        self.STATUS_TEXT = "gsv2.dev"
+        self.LOG_CHANNEL = 1218317295345074298
         self.vanity_task.start()
 
     async def has_vanity(self, member: discord.Member):

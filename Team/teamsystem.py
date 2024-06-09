@@ -65,15 +65,15 @@ class Team(commands.Cog):
         if result and result[0] is not None:
             total_messages = result[0]
             goal_reached = 'Ja' if total_messages >= 150 else 'Nein'
-
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
             embed = discord.Embed(
                 title="User Evaluation",
                 description=f"User: {user.name}\nGesamtzahl der Nachrichten in den letzten zwei Wochen: {total_messages}\nDas Ziel ist erreicht: {goal_reached}",
-                color=discord.Color.blue()
-            )
-
+                color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             embed.set_author(name=user.name, icon_url=user.avatar.url)
-            await ctx.respond(embed=embed)
+            await ctx.respond(file=file, embed=embed, delete_after=120)
         else:
             await ctx.respond("User not found or no messages in the last two weeks")
 
@@ -95,15 +95,15 @@ class Team(commands.Cog):
 
             predicted_messages = average_messages_per_day * days_until_saturday
             goal_reached = 'Ja' if predicted_messages >= 150 else 'Nein'
-
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
             embed = discord.Embed(
                 title="User Prediction",
                 description=f"User: {user.name}\nVoraussichtliche Gesamtzahl der Nachrichten bis Samstag: {predicted_messages}\nDas Ziel wird erreicht: {goal_reached}",
-                color=discord.Color.blue()
-            )
-
+                color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             embed.set_author(name=user.name, icon_url=user.avatar.url)
-            await ctx.respond(embed=embed)
+            await ctx.respond(file=file,embed=embed, delete_after=120)
         else:
             await ctx.respond("User not found or no messages in the history")
 
@@ -123,11 +123,13 @@ class Team(commands.Cog):
         mod_role = discord.utils.get(guild.roles, id=mod_role_id)
         teamleitung_role_id = 1070336143373119593
         teamleitung_role = discord.utils.get(guild.roles, id=teamleitung_role_id)
+        community_manager_role_id = 1243955774221193247
+        community_manager_role = discord.utils.get(guild.roles, id=community_manager_role_id)
         special_role_id = 1044557317947019264
         special_role = discord.utils.get(guild.roles, id=special_role_id)
         if special_role is None:
             return
-        evaluation_channel_id = 1073701381069869056
+        evaluation_channel_id = 1249347322534559877
         evaluation_channel = self.bot.get_channel(evaluation_channel_id)
 
         for member in special_role.members:
@@ -139,7 +141,7 @@ class Team(commands.Cog):
 
                 for member in special_role.members:
                     if special_role not in member.roles:
-                        roles_to_remove = [tmod_role, mod_role, teamleitung_role, tsup_role, sup_role]
+                        roles_to_remove = [tmod_role, mod_role, teamleitung_role, tsup_role, sup_role, community_manager_role]
                         for role in roles_to_remove:
                             if role in member.roles:
                                 await member.remove_roles(role)
@@ -155,15 +157,15 @@ class Team(commands.Cog):
 
                 self.cursor.execute("UPDATE team_members SET message_count = 0, strikes = ? WHERE user_id = ?",
                                     (strikes, user_id,))
-
+                file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+                color = 0x2596be
                 embed = discord.Embed(
-                    title="User Evaluation",
+                    title="Teamziele Auswertung",
                     description=f"User: {user.name}\nMessage Count: {message_count}\nStrikes: {strikes}",
-                    color=discord.Color.blue()
-                )
-
+                    color=color)
+                embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
                 embed.set_author(name=user.name, icon_url=user.avatar.url)
-                await evaluation_channel.send(embed=embed)
+                await evaluation_channel.send(file=file, embed=embed)
 
             else:
                 self.cursor.execute("INSERT INTO team_members VALUES (?, ?, ?)", (member.id, 0, 1))

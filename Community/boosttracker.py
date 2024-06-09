@@ -4,7 +4,6 @@ from discord.commands import Option
 from discord.ext import commands
 from discord.utils import format_dt
 from discord.ui import View, Button
-# nachrichten in embeds coden
 
 
 class Boosttime(commands.Cog):
@@ -37,18 +36,28 @@ class Boosttime(commands.Cog):
             await ctx.respond(file=file, embed=embed)
             return
         if user not in ctx.guild.members:
-            embed = discord.Embed(title='❌ | Error', description='', color=color)
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(title='❌ | Error', description='**Dieser User ist leider nicht in GSv2.0**', color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             await ctx.respond(file=file, embed=embed)
             return
 
         if boostzeit is None:
-            await ctx.respond(content="**`❌` | Dieser User hat noch nicht geboostet!**")
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(title='❌ | Error', description='**`❌` | Dieser User hat noch nicht geboostet!**',
+                                  color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=embed)
             return
         else:
             boostzeit_formatted = format_dt(boostzeit, style="R")
-            await ctx.respond(
-                content=f"**`🚀` | {user.mention} hat das Server Boosting auf diesem Server {boostzeit_formatted} gestartet!**")
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(title='❌ | Error', description=f"**`🚀` | {user.mention} hat das Server Boosting auf diesem Server {boostzeit_formatted} gestartet!**", color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=embed)
 
 
 class button(View):
