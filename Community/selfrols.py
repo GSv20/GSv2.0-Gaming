@@ -23,7 +23,7 @@ class role(commands.Cog):
     async def selfrole(self, ctx,
                        text: Option(str, "Wähle einen Text aus", choices=[
                            "Sexualität",
-                           "Beziehungsstatus"
+                           "Beziehungsstatus",
                            "Geschlechtsauswahl",
                            "Alter",
                            "Farbenauswahl",
@@ -69,7 +69,7 @@ class role(commands.Cog):
                 description="Angaben sind freiwillig",
                 color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            view = beziehungsstatus()
+            view = geschlechtsauswahl()
             await ctx.respond("Nachricht geschickt", ephemeral=True)
             await channel.send(file=file, embed=embed, view=view)
 
@@ -106,7 +106,8 @@ class role(commands.Cog):
             color = 0x2596be
             embed = discord.Embed(
                 title="Pingrollen",
-                description="Wähle unten im Menü die Pingrolle aus",
+                description="Drücke [hier](https://discord.com/channels/913082943495344179/1073993336890871848/1249873609091190868)"
+                            "um zum anfang der Selfrols zu gelangen",
                 color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             view = pingrollen()
