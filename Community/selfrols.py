@@ -23,18 +23,16 @@ class role(commands.Cog):
     async def selfrole(self, ctx,
                        text: Option(str, "Wähle einen Text aus", choices=[
                            "Sexualität",
+                           "Beziehungsstatus"
                            "Geschlechtsauswahl",
-                           "Beziehungsstatus",
                            "Alter",
                            "Farbenauswahl",
                            "Pingrollen",
-                           "Plattformen"
-                       ], required=True),
-                       channel: Option(discord.TextChannel, "Der Channel, in dem das Menü gesendet werden soll",
-                                       required=False),):
+                           "Plattformen"], required=True),
+                       channel: Option(discord.TextChannel, "Der Channel, in dem das Menü gesendet werden soll", required=False)):
+
         if channel is None:
             channel = ctx.channel
-
         if text == "Sexualität":
             file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             color = 0x2596be
@@ -49,18 +47,6 @@ class role(commands.Cog):
             await ctx.respond("Nachricht geschickt", ephemeral=True)
             await channel.send(file=file, embed=embed, view=view)
 
-        elif text == "Geschlechtsauswahl":
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-            color = 0x2596be
-            embed = discord.Embed(title="Geschlechtsauswahl", description='Du musst dies nicht auswählen\n'
-                                                                           'Es ist Freiwillig!', color=color)
-            embed.set_image(
-                url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031651089354782/Geschlechtsauswahl.png?ex=661c034f&is=66098e4f&hm=5e4de732423c9e266495ae32a3856c78298cb59d6ddbd8a1ee280e87f3b9fc46&')
-            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            view = geschlechtsauswahl()
-            await ctx.respond("Nachricht geschickt", ephemeral=True)
-            await channel.send(file=file, embed=embed, view=view)
-
         elif text == "Beziehungsstatus":
             file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             color = 0x2596be
@@ -70,6 +56,18 @@ class role(commands.Cog):
                 color=color)
             embed.set_image(
                 url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031757754433657/beziehungsstatus.jpeg')
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = beziehungsstatus()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Geschlechtsauswahl":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Geschlechtsauswahl",
+                description="Angaben sind freiwillig",
+                color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             view = beziehungsstatus()
             await ctx.respond("Nachricht geschickt", ephemeral=True)
@@ -108,7 +106,7 @@ class role(commands.Cog):
             color = 0x2596be
             embed = discord.Embed(
                 title="Pingrollen",
-                description="Drücke [hier](https://discord.com/channels/913082943495344179/1073993336890871848/1249179181070290966) um zum anfang der Selfrols zu gelangen",
+                description="Wähle unten im Menü die Pingrolle aus",
                 color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             view = pingrollen()
@@ -143,16 +141,14 @@ class plattformen(discord.ui.View):
         discord.SelectOption(label="Playstation", value="playstation"),
         discord.SelectOption(label="Xbox", value="xbox"),
         discord.SelectOption(label="Switch", value="switch"),
-        discord.SelectOption(label="Handy", value="handy")
-    ]
+        discord.SelectOption(label="Handy", value="handy")]
 
     @discord.ui.select(
         placeholder="Wähle deine Plattform aus",
         min_values=1,
         max_values=5,
         options=options,
-        custom_id="plattform_select"
-    )
+        custom_id="plattform_select")
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
@@ -160,8 +156,7 @@ class plattformen(discord.ui.View):
             "playstation": 1014881100490883072,
             "xbox": 1014881101740781599,
             "switch": 1014881103204597800,
-            "handy": 1014881104429326356
-        }
+            "handy": 1014881104429326356}
         role_id = roles[selected_value]
         role = interaction.guild.get_role(role_id)
 
@@ -182,24 +177,20 @@ class geschlechtsauswahl(discord.ui.View):
     options = [
         discord.SelectOption(label="Männlich ", value="mann"),
         discord.SelectOption(label="Weiblich ", value="weiblich"),
-        discord.SelectOption(label="Divers ", value="divers"),
-
-    ]
+        discord.SelectOption(label="Divers ", value="divers")]
 
     @discord.ui.select(
         placeholder="Wähle dein Geschlecht aus",
         min_values=1,
         max_values=5,
         options=options,
-        custom_id="geschlecht_select"
-    )
+        custom_id="geschlecht_select")
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
             "mann": 1014881107461799966,
             "weiblich": 1014881108195807403,
-            "divers": 1014881109596708955,
-        }
+            "divers": 1014881109596708955}
         role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
 
@@ -231,16 +222,14 @@ class sexualitat(discord.ui.View):
         discord.SelectOption(label="Intersexuell ", value="intersexuell"),
         discord.SelectOption(label="Two-Spirits/Double Soul ", value="tsd"),
         discord.SelectOption(label="Pan Sexuell ", value="pan"),
-        discord.SelectOption(label="Asexuell ", value="asexuell"),
-    ]
+        discord.SelectOption(label="Asexuell ", value="asexuell")]
 
     @discord.ui.select(
         placeholder="Wähle deine Sexualität aus",
         min_values=1,
         max_values=5,
         options=options,
-        custom_id="sexualitat_select"
-    )
+        custom_id="sexualitat_select")
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
@@ -253,8 +242,7 @@ class sexualitat(discord.ui.View):
             "intersexuell": 1052167367905513572,
             "tsd": 1052167940721614890,
             "pan": 1069675619060813894,
-            "asexuell": 1052167858051874816
-        }
+            "asexuell": 1052167858051874816}
         role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
 
@@ -282,17 +270,14 @@ class beziehungsstatus(discord.ui.View):
         discord.SelectOption(label="Verlobt ", value="verlobt"),
         discord.SelectOption(label="Verheiratet ", value="verheiratet"),
         discord.SelectOption(label="Single", value="Single"),
-        discord.SelectOption(label="Kompliziert ", value="kompliziert"),
-
-    ]
+        discord.SelectOption(label="Kompliziert ", value="kompliziert")]
 
     @discord.ui.select(
         placeholder="Wähle dein beziehungsstatus aus",
         min_values=1,
         max_values=5,
         options=options,
-        custom_id="beziehungsstatus_select"
-    )
+        custom_id="beziehungsstatus_select")
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
@@ -301,8 +286,7 @@ class beziehungsstatus(discord.ui.View):
             "verlobt": 1097875012595224576,
             "verheiratet": 1097874957188464810,
             "Single": 1014881112339787808,
-            "kompliziert": 1014881113619038359,
-        }
+            "kompliziert": 1014881113619038359}
         role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
 
@@ -330,17 +314,14 @@ class alter(discord.ui.View):
         discord.SelectOption(label="Über 20 ", value="20+"),
         discord.SelectOption(label="Über 30 ", value="30+"),
         discord.SelectOption(label="Über 40", value="40+"),
-        discord.SelectOption(label="Mehr als 50 ", value="50+"),
-
-    ]
+        discord.SelectOption(label="Mehr als 50 ", value="50+")]
 
     @discord.ui.select(
-        placeholder="Wähle dein alter aus",
+        placeholder="Wähle dein Alter aus",
         min_values=1,
         max_values=5,
         options=options,
-        custom_id="alter_select"
-    )
+        custom_id="alter_select")
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
@@ -349,8 +330,7 @@ class alter(discord.ui.View):
             "20+": 1205648736504512523,
             "30+": 1205648809481212054,
             "40+": 1205648843044159508,
-            "50+": 1205648884135624704,
-        }
+            "50+": 1205648884135624704,}
         role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
 
@@ -390,17 +370,14 @@ class farbenauswahl(discord.ui.View):
         discord.SelectOption(label="Dunkel Blau", value="dblau"),
         discord.SelectOption(label="Neon Grün", value="ngrün"),
         discord.SelectOption(label="Türkis", value="türkis"),
-        discord.SelectOption(label="Dunkelgrün", value="dgrün"),
-
-    ]
+        discord.SelectOption(label="Dunkelgrün", value="dgrün")]
 
     @discord.ui.select(
         placeholder="Wähle deine Lieblingsfarbe aus",
         min_values=1,
         max_values=5,
         options=options,
-        custom_id="farbenauswahl_select"
-    )
+        custom_id="farbenauswahl_select")
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
@@ -421,8 +398,7 @@ class farbenauswahl(discord.ui.View):
             "dblau": 1013601776945074228,
             "ngrün": 1018473322796822540,
             "türkis": 1013600625973538816,
-            "dgrün": 1028000709414752398,
-        }
+            "dgrün": 1028000709414752398,}
         role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
 
@@ -449,12 +425,10 @@ class pingrollen(discord.ui.View):
         discord.SelectOption(label="Death Chat ping", value="dcp"),
         discord.SelectOption(label="News Ping", value="np"),
         discord.SelectOption(label="Voice Ping", value="voice"),
-        discord.SelectOption(label="YouTube Ping", value="yt")
-
-    ]
+        discord.SelectOption(label="YouTube Ping", value="yt")]
 
     @discord.ui.select(
-        placeholder="Pings an / abstellten",
+        placeholder="Wähle deine Pingrollen aus",
         min_values=1,
         max_values=5,
         options=options,
