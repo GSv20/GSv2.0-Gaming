@@ -119,7 +119,7 @@ class role(commands.Cog):
             color = 0x2596be
             embed = discord.Embed(
                 title="Pingrollen",
-                description="Drücke [hier](https://discord.com/channels/913082943495344179/1073993336890871848/1249873609091190868)"
+                description="Drücke [hier](https://discord.com/channels/913082943495344179/1073993336890871848/1249873609091190868), "
                             "um zum anfang der Selfrols zu gelangen",
                 color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
@@ -445,7 +445,8 @@ class extras(discord.ui.View):
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
-            "dev": 1243955206480461944}
+            "dev": 1243955206480461944,
+        }
         role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
 
