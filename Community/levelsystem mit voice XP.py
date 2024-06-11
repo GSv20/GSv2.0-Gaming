@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from discord.commands import slash_command, Option
 import aiosqlite
+# file fehler beheben
 
 class LevelSystem(commands.Cog):
     def __init__(self, bot):

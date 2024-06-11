@@ -25,7 +25,7 @@ class role(commands.Cog):
                            "Sexualität",
                            "Beziehungsstatus",
                            "Geschlechtsauswahl",
-                           "Alter"
+                           "Alter",
                            "Extras",
                            "Farbenauswahl",
                            "Pingrollen",
@@ -482,11 +482,11 @@ class pingrollen(discord.ui.View):
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
         roles = {
-            "nping": 1014881120921321543,
-            "dcp": 1013601430533320785,
-            "np": 1028012239300612176,
+            "nping": 1175593418475454534,
+            "dcp": 1014881120921321543,
+            "np": 1014881119990190122,
             "voice": 1248706499539238956,
-            "yt": 1109457019037036684,}
+            "yt": 1109457019037036684}
         role_id = roles.get(selected_value)
         role = interaction.guild.get_role(role_id)
 

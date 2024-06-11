@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from discord.ext import commands
 from discord.ui import View, Button
@@ -23,6 +24,7 @@ class ForumCog(commands.Cog):
         embed = discord.Embed(title='Bug Report', description='Das Team bedankt sich für den Report.\nWir setzen uns unverzüglich an die Arbeit\n\nDanke das du die GSv Community so fleißig unterstützt.', colour=color)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
         view = CustomView(timeout=None)
+        await asyncio.sleep(3)
         await thread.send(file=file, embed=embed, view=view)
 
 
