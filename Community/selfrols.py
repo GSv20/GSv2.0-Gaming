@@ -25,7 +25,8 @@ class role(commands.Cog):
                            "Sexualität",
                            "Beziehungsstatus",
                            "Geschlechtsauswahl",
-                           "Alter",
+                           "Alter"
+                           "Extras",
                            "Farbenauswahl",
                            "Pingrollen",
                            "Plattformen"], required=True),
@@ -58,6 +59,18 @@ class role(commands.Cog):
                 url='https://cdn.discordapp.com/attachments/1073711672717488129/1224031757754433657/beziehungsstatus.jpeg')
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             view = beziehungsstatus()
+            await ctx.respond("Nachricht geschickt", ephemeral=True)
+            await channel.send(file=file, embed=embed, view=view)
+
+        elif text == "Extras":
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Extras",
+                description="",
+                color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            view = extras()
             await ctx.respond("Nachricht geschickt", ephemeral=True)
             await channel.send(file=file, embed=embed, view=view)
 
@@ -183,7 +196,7 @@ class geschlechtsauswahl(discord.ui.View):
     @discord.ui.select(
         placeholder="Wähle dein Geschlecht aus",
         min_values=1,
-        max_values=5,
+        max_values=1,
         options=options,
         custom_id="geschlecht_select")
     async def callback(self, select, interaction: discord.Interaction):
@@ -228,7 +241,7 @@ class sexualitat(discord.ui.View):
     @discord.ui.select(
         placeholder="Wähle deine Sexualität aus",
         min_values=1,
-        max_values=5,
+        max_values=1,
         options=options,
         custom_id="sexualitat_select")
     async def callback(self, select, interaction: discord.Interaction):
@@ -276,7 +289,7 @@ class beziehungsstatus(discord.ui.View):
     @discord.ui.select(
         placeholder="Wähle dein beziehungsstatus aus",
         min_values=1,
-        max_values=5,
+        max_values=2,
         options=options,
         custom_id="beziehungsstatus_select")
     async def callback(self, select, interaction: discord.Interaction):
@@ -320,7 +333,7 @@ class alter(discord.ui.View):
     @discord.ui.select(
         placeholder="Wähle dein Alter aus",
         min_values=1,
-        max_values=5,
+        max_values=1,
         options=options,
         custom_id="alter_select")
     async def callback(self, select, interaction: discord.Interaction):
@@ -376,7 +389,7 @@ class farbenauswahl(discord.ui.View):
     @discord.ui.select(
         placeholder="Wähle deine Lieblingsfarbe aus",
         min_values=1,
-        max_values=5,
+        max_values=1,
         options=options,
         custom_id="farbenauswahl_select")
     async def callback(self, select, interaction: discord.Interaction):
@@ -416,6 +429,38 @@ class farbenauswahl(discord.ui.View):
 
         await interaction.response.send_message(message, ephemeral=True)
 
+class extras(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    options = [
+        discord.SelectOption(label="Dev Programm", value="dev")]
+
+    @discord.ui.select(
+        placeholder="Wähle hier Extras aus",
+        min_values=1,
+        max_values=1,
+        options=options,
+        custom_id="farbenauswahl_select")
+    async def callback(self, select, interaction: discord.Interaction):
+        selected_value = select.values[0]
+        roles = {
+            "dev": 1243955206480461944}
+        role_id = roles.get(selected_value)
+        role = interaction.guild.get_role(role_id)
+
+        if role is None:
+            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+            return
+
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        else:
+            await interaction.user.add_roles(role)
+            message = f"Dir wurde {role.mention} hinzugefügt"
+
+        await interaction.response.send_message(message, ephemeral=True)
 
 class pingrollen(discord.ui.View):
     def __init__(self):
