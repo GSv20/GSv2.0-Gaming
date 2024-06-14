@@ -1,8 +1,6 @@
 from typing import Optional
-
 import discord
 from discord.ext import commands, tasks
-
 
 
 def get_channel_containing_name(guild: discord.Guild, target: str) -> Optional[discord.abc.GuildChannel]:
@@ -45,9 +43,7 @@ class MemberCount(commands.Cog):
             self._make_member_count_name(guild),
             position=0,
             overwrites={
-                guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
-            }
-        )
+                guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),})
 
     @member_count.before_loop
     async def _before_member_count(self):

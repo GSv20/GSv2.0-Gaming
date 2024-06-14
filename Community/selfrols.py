@@ -15,6 +15,7 @@ class role(commands.Cog):
         self.bot.add_view(sexualitat())
         self.bot.add_view(beziehungsstatus())
         self.bot.add_view(alter())
+        self.bot.add_view(Extras())
         self.bot.add_view(farbenauswahl())
         self.bot.add_view(pingrollen())
 
@@ -70,7 +71,7 @@ class role(commands.Cog):
                 description="",
                 color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            view = extras()
+            view = Extras()
             await ctx.respond("Nachricht geschickt", ephemeral=True)
             await channel.send(file=file, embed=embed, view=view)
 
@@ -429,7 +430,11 @@ class farbenauswahl(discord.ui.View):
 
         await interaction.response.send_message(message, ephemeral=True)
 
-class extras(discord.ui.View):
+
+import discord
+
+
+class Extras(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
@@ -444,24 +449,27 @@ class extras(discord.ui.View):
         custom_id="farbenauswahl_select")
     async def callback(self, select, interaction: discord.Interaction):
         selected_value = select.values[0]
-        roles = {
-            "dev": 1243955206480461944,
+        roles_dict = {
+            "dev": 1224020966309498900,
         }
-        role_id = roles.get(selected_value)
-        role = interaction.guild.get_role(role_id)
+        role_id = roles_dict.get(selected_value)
 
-        if role is None:
-            await interaction.response.send_message("Die Rolle existiert nicht.", ephemeral=True)
+        selected_role = interaction.guild.get_role(role_id)
+
+        # Debug: Check if the role is found
+        if selected_role is None:
+            await interaction.response.send_message(f"Die Rolle mit der ID {role_id} existiert nicht.", ephemeral=True)
             return
 
-        if role in interaction.user.roles:
-            await interaction.user.remove_roles(role)
-            message = f"Dir wurde die Rolle {role.mention} entfernt"
+        if selected_role in interaction.user.roles:
+            await interaction.user.remove_roles(selected_role)
+            message = f"Dir wurde die Rolle {selected_role.mention} entfernt"
         else:
-            await interaction.user.add_roles(role)
-            message = f"Dir wurde {role.mention} hinzugefügt"
+            await interaction.user.add_roles(selected_role)
+            message = f"Dir wurde {selected_role.mention} hinzugefügt"
 
         await interaction.response.send_message(message, ephemeral=True)
+
 
 class pingrollen(discord.ui.View):
     def __init__(self):

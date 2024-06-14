@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands, tasks
 from discord.commands import slash_command, Option
 import aiosqlite
-# file fehler beheben
 
 class LevelSystem(commands.Cog):
     def __init__(self, bot):
@@ -74,7 +73,8 @@ class LevelSystem(commands.Cog):
 
         await self.check_user(message.author.id)
         async with aiosqlite.connect(self.DB) as db:
-            await db.execute("UPDATE users SET msg_count = msg_count + 1, xp = xp + ? WHERE user_id = ?", (xp, message.author.id))
+            await db.execute("UPDATE users SET msg_count = msg_count + 1, xp = xp + ? WHERE user_id = ?",
+                             (xp, message.author.id))
             await db.commit()
 
         new_xp = await self.get_xp(message.author.id)
@@ -85,73 +85,39 @@ class LevelSystem(commands.Cog):
         if old_level == new_level:
             return
 
-        if new_level == 5:
-            lvl = message.guild.get_role(1017133827631611954) # IDs von Levelrollen
+        rolledazu = "nein"
+        role_map = {
+            5: 1017133827631611954,
+            10: 1051796133317464074,
+            20: 1249354197770440724,
+            35: 1249354328444244020,
+            50: 1017134812802322503,
+            75: 1032672722007904346,
+            100: 1032673100409606204
+        }
+
+        if new_level in role_map:
+            lvl = message.guild.get_role(role_map[new_level])
             await message.author.add_roles(lvl)
             rolledazu = "ja"
 
-        elif new_level == 10:
-            lvl = message.guild.get_role(1051796133317464074)
-            await message.author.add_roles(lvl)
-            rolledazu = "ja"
-        elif new_level == 20:
-            lvl = message.guild.get_role(1249354197770440724)
-            await message.author.add_roles(lvl)
-            rolledazu = "ja"
-        elif new_level == 35:
-            lvl = message.guild.get_role(1249354328444244020)
-            await message.author.add_roles(lvl)
-            rolledazu = "ja"
-        elif new_level == 50:
-            lvl = message.guild.get_role(1017134812802322503)
-            await message.author.add_roles(lvl)
-            rolledazu = "ja"
-        elif new_level == 75:
-            lvl = message.guild.get_role(1032672722007904346)
-            await message.author.add_roles(lvl)
-            rolledazu = "ja"
-        elif new_level == 100:
-            lvl = message.guild.get_role(1032673100409606204)
-            await message.author.add_roles(lvl)
-            rolledazu = "ja"
-
-        else:
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-            color = 0x2596be
-            rolledazu = "nein"
-            lvlup = discord.Embed(
-                title="Level up!",
-                description=f"Herzlichen Glückwunsch <@{message.author.id}> du bist jetzt **Level {new_level}!** \nDu "
-                            f"hast insgesamt **{msgcount} Nachrichten** geschrieben!",
-                color=color)
-            lvlup.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
-            if voicecount != 0:
-                file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-                color = 0x2596be
-                lvlup = discord.Embed(
-                    title="Level up!",
-                    description=f"Herzlichen Glückwunsch <@{message.author.id}> du bist jetzt **Level {new_level}!**\n \n Du hast insgesamt **{msgcount} Nachrichten** geschrieben und {voicecount} Minuten im Voice verbracht!",
-                    color=color)
-                lvlup.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+        color = 0x2596be
 
         if rolledazu == "ja":
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-            color = 0x2596be
-            lvlup = discord.Embed(
-                title="Level up!",
-                description=f"Herzlichen Glückwunsch <@{message.author.id}> du bist jetzt **Level {new_level}!**\n \n Du hast insgesamt **{msgcount} Nachrichten** geschrieben!\n Du hast die Rolle `{lvl}` freigeschaltet!",
-                color=color)
-            lvlup.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
+            description = f"Herzlichen Glückwunsch <@{message.author.id}> du bist jetzt **Level {new_level}!**\n \n Du hast insgesamt **{msgcount} Nachrichten** geschrieben!\n Du hast die Rolle `{lvl}` freigeschaltet!"
             if voicecount != 0:
-                file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-                color = 0x2596be
-                lvlup = discord.Embed(
-                    title="Level up!",
-                    description=f"Herzlichen Glückwunsch <@{message.author.id}> du bist jetzt **Level {new_level}!**\n \n Du hast insgesamt **{msgcount} Nachrichten** geschrieben und {voicecount} Minuten im Voice verbracht!\n Du hast die Rolle `{lvl}` freigeschaltet!",
-                    color=color)
-                lvlup.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+                description += f"\n Du hast insgesamt **{msgcount} Nachrichten** geschrieben und {voicecount} Minuten im Voice verbracht!"
+        else:
+            description = f"Herzlichen Glückwunsch <@{message.author.id}> du bist jetzt **Level {new_level}!** \nDu hast insgesamt **{msgcount} Nachrichten** geschrieben!"
+            if voicecount != 0:
+                description += f" und {voicecount} Minuten im Voice verbracht!"
+
+        lvlup = discord.Embed(
+            title="Level up!",
+            description=description,
+            color=color)
+        lvlup.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
 
         ch = message.author.dm_channel
         if ch is None:

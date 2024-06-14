@@ -20,11 +20,11 @@ class teampanel(ezcord.Cog):
                 user_id INTEGER,
                 warns INTEGER DEFAULT 0,
                 warn_reason TEXT,
-                warn_time TEXT)
-                """)
+                warn_time TEXT)""")
 
-    @slash_command(description='')
+    @slash_command(description='Manage User sofern sie scheiße bauen (lol)')
     @commands.has_role(1044557317947019264)
+    @discord.guild_only()
     async def teampanel(self, ctx, member: Option(discord.Member, required=True), reason: Option(str, required=True)):
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         color = 0x2596be
@@ -48,12 +48,12 @@ class teampanel(ezcord.Cog):
             description=description,
             color=color)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.respond(file=file, embed=embed, view=AdminView(self.bot, member, reason, ctx.guild, ctx), ephemeral=True)
 
     @slash_command(description="Lösche Nachrichten aus dem Channel")
     @commands.has_permissions(administrator=True)
+    @discord.guild_only()
     async def purge(self, ctx, amount: Option(int, "Anzahl an Nachrichten (min. 1 | max. 100)", required=True)):
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         amount += 1
@@ -78,11 +78,10 @@ class teampanel(ezcord.Cog):
             success_embed.set_thumbnail(url=ctx.guild.icon.url)
             success_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             success_embed.set_author(name=f"Purge | GSv2.0", icon_url=ctx.bot.user.avatar.url)
-
             await ctx.respond(file=file2, embed=success_embed, delete_after=10, ephemeral=True)
 
     @slash_command(description="Zeige alle Warns eines Users aus dem Server an")
-    @discord.default_permissions(kick_members=True)
+    @commands.has_role(1044557317947019264)
     @discord.guild_only()
     async def warnings(self, ctx, member: discord.Member):
         warns_info = []
@@ -115,9 +114,40 @@ class teampanel(ezcord.Cog):
         warnings_embed.set_author(name=f"{ctx.guild.name}", icon_url=ctx.guild.icon.url)
         warnings_embed.set_thumbnail(url=member.avatar.url)
         warnings_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
         await ctx.respond(file=file, embed=warnings_embed, ephemeral=False)
 
+    @teampanel.error
+    async def tickets_error(self, ctx, error):
+        if isinstance(error, commands.MissingRole):
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            em = discord.Embed(title='Support Anfrage',
+                               description="Leider ist dies eine Team Option\nWenn du Hilfe brauchst melde dich gerne im Support:\n<#1073700885886152837>",
+                               color=discord.Color.red())
+            em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=em, delete_after=15)
+            print(f'{ctx.author.name} hat versucht /teampanel auszuführen')
+
+    @warnings.error
+    async def tickets_error(self, ctx, error):
+        if isinstance(error, commands.MissingRole):
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            em = discord.Embed(title='Support Anfrage',
+                               description="Leider ist dies eine Team Option\nWenn du Hilfe brauchst melde dich gerne im Support:\n<#1073700885886152837>",
+                               color=discord.Color.red())
+            em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=em, delete_after=15)
+            print(f'{ctx.author.name} hat versucht /warnings auszuführen')
+
+    @purge.error
+    async def tickets_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            em = discord.Embed(title='Support Anfrage',
+                               description="Leider ist dies eine Team Option\nWenn du Hilfe brauchst melde dich gerne im Support:\n<#1073700885886152837>",
+                               color=discord.Color.red())
+            em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=em, delete_after=15)
+            print(f'{ctx.author.name} hat versucht /purge auszuführen')
 
 def setup(bot):
     bot.add_cog(teampanel(bot))
