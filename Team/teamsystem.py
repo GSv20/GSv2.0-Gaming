@@ -5,7 +5,6 @@ import discord
 import sqlite3
 from discord.ext import commands, tasks
 
-
 class Team(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -15,6 +14,8 @@ class Team(commands.Cog):
                                (user_id INTEGER PRIMARY KEY, message_count INTEGER, strikes INTEGER)''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS message_history
                                (user_id INTEGER, date TEXT, message_count INTEGER)''')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS goal_history
+                               (user_id INTEGER, week_start TEXT, goal_reached TEXT)''')
         self.conn.commit()
         self.bot.loop.create_task(self.start_loops())
 
@@ -58,7 +59,7 @@ class Team(commands.Cog):
     @slash_command(description="Auswertung der Teammitglieder history")
     async def history(self, ctx,
                       user: Option(discord.User, "Der User dessen history ausgewertet werden soll", required=True)):
-        two_weeks_ago = (datetime.date.today() - datetime.timedelta(weeks=1)).isoformat()
+        two_weeks_ago = (datetime.date.today() - datetime.timedelta(weeks=2)).isoformat()
         self.cursor.execute("SELECT SUM(message_count) FROM message_history WHERE user_id = ? AND date >= ?",
                             (user.id, two_weeks_ago))
         result = self.cursor.fetchone()
@@ -72,8 +73,9 @@ class Team(commands.Cog):
                 description=f"User: {user.name}\nGesamtzahl der Nachrichten in den letzten zwei Wochen: {total_messages}\nDas Ziel ist erreicht: {goal_reached}",
                 color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+
             embed.set_author(name=user.name, icon_url=user.avatar.url)
-            await ctx.respond(file=file, embed=embed, delete_after=120)
+            await ctx.respond(file=file, embed=embed)
         else:
             await ctx.respond("User not found or no messages in the last two weeks")
 
@@ -101,11 +103,34 @@ class Team(commands.Cog):
                 title="User Prediction",
                 description=f"User: {user.name}\nVoraussichtliche Gesamtzahl der Nachrichten bis Samstag: {predicted_messages}\nDas Ziel wird erreicht: {goal_reached}",
                 color=color)
-            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             embed.set_author(name=user.name, icon_url=user.avatar.url)
-            await ctx.respond(file=file,embed=embed, delete_after=120)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=embed)
         else:
             await ctx.respond("User not found or no messages in the history")
+
+    @slash_command(description="Zeigt die History, ob der Benutzer das Ziel erreicht hat")
+    async def goal_history(self, ctx,
+                           user: Option(discord.User, "Der User dessen Zielerreichungshistory angezeigt werden soll",
+                                        required=True)):
+        self.cursor.execute("SELECT week_start, goal_reached FROM goal_history WHERE user_id = ? ORDER BY week_start DESC",
+                            (user.id,))
+        results = self.cursor.fetchall()
+        if results:
+            description = f"User: {user.name}\n\n"
+            for week_start, goal_reached in results:
+                description += f"Woche beginnend am {week_start}: Ziel erreicht: {goal_reached}\n"
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
+            embed = discord.Embed(
+                title="Goal Achievement History",
+                description=description,
+                color=color)
+            embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            embed.set_author(name=user.name, icon_url=user.avatar.url)
+            await ctx.respond(file=file, embed=embed)
+        else:
+            await ctx.respond("No goal achievement history found for this user")
 
     @tasks.loop(seconds=7 * 24 * 60 * 60)
     async def check_messages(self):
@@ -139,34 +164,46 @@ class Team(commands.Cog):
                 user_id, message_count, strikes = result
                 user = self.bot.get_user(user_id)
 
-                for member in special_role.members:
-                    if special_role not in member.roles:
-                        roles_to_remove = [tmod_role, mod_role, teamleitung_role, tsup_role, sup_role, community_manager_role]
-                        for role in roles_to_remove:
-                            if role in member.roles:
-                                await member.remove_roles(role)
-                if strikes > 2:  # Wenn Strikes größer als 2 sind, entferne die Rolle
-                    await member.remove_roles(special_role)
-                    self.cursor.execute("DELETE FROM team_members WHERE user_id = ?", (user_id,))
-                    continue
+                # Calculate message count for the week
+                one_week_ago = (datetime.date.today() - datetime.timedelta(days=7)).isoformat()
+                self.cursor.execute("SELECT SUM(message_count) FROM message_history WHERE user_id = ? AND date >= ?",
+                                    (member.id, one_week_ago))
+                week_result = self.cursor.fetchone()
+                if week_result and week_result[0] is not None:
+                    week_message_count = week_result[0]
+                else:
+                    week_message_count = 0
 
-                if message_count >= 150:
+                # Check message count and update strikes
+                if week_message_count >= 150:
                     strikes = max(0, strikes - 1)
-                elif message_count == 0:
+                    goal_reached = 'Ja'
+                else:
                     strikes += 1
+                    goal_reached = 'Nein'
 
                 self.cursor.execute("UPDATE team_members SET message_count = 0, strikes = ? WHERE user_id = ?",
                                     (strikes, user_id,))
+                self.cursor.execute("INSERT INTO goal_history VALUES (?, ?, ?)",
+                                    (user_id, one_week_ago, goal_reached))
                 file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
                 color = 0x2596be
                 embed = discord.Embed(
-                    title="Teamziele Auswertung",
-                    description=f"User: {user.name}\nMessage Count: {message_count}\nStrikes: {strikes}",
+                    title="User Evaluation",
+                    description=f"User: {user.name}\nMessage Count: {week_message_count}\nStrikes: {strikes}",
                     color=color)
                 embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
                 embed.set_author(name=user.name, icon_url=user.avatar.url)
                 await evaluation_channel.send(file=file, embed=embed)
 
+                # Remove roles if strikes exceed the limit
+                if strikes > 2:
+                    roles_to_remove = [tmod_role, mod_role, teamleitung_role, tsup_role, sup_role]
+                    for role in roles_to_remove:
+                        if role in member.roles:
+                            await member.remove_roles(role)
+                    await member.remove_roles(special_role)
+                    self.cursor.execute("DELETE FROM team_members WHERE user_id = ?", (user_id,))
             else:
                 self.cursor.execute("INSERT INTO team_members VALUES (?, ?, ?)", (member.id, 0, 1))
         self.conn.commit()
@@ -176,7 +213,6 @@ class Team(commands.Cog):
         await self.bot.wait_until_ready()
         seconds_until = self.seconds_until_saturday_noon()
         await asyncio.sleep(seconds_until)
-
 
 def setup(bot):
     bot.add_cog(Team(bot))
