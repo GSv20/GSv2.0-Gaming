@@ -28,6 +28,13 @@ if __name__ == '__main__':
             bot.load_extension(f'Community.{filename[:-3]}')
             print(f'Load command: {filename[:-3]}')
 
+async def status_task():
+    while True:
+        await bot.change_presence(activity=discord.Game('/help to see all commands'), status=discord.Status.dnd)
+        await asyncio.sleep(15)
+        await bot.change_presence(activity=discord.Game('Developed by gsv2.dev'), status=discord.Status.dnd)
+        await asyncio.sleep(15)
+
 
 @bot.event
 async def on_ready():
@@ -36,7 +43,6 @@ async def on_ready():
     bot.add_view(TutorialView())
     bot.add_view(Ticketweiterleitung())
     bot.add_view(Ticketmenu())
-    await bot.change_presence(activity=discord.Game(name='https://gsv2.dev'), status=discord.Status.dnd)
     print(f"Logged in as {bot.user}")
 
 
