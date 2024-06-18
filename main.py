@@ -43,6 +43,7 @@ async def on_ready():
     bot.add_view(TutorialView())
     bot.add_view(Ticketweiterleitung())
     bot.add_view(Ticketmenu())
+    await bot.loop.create_task(status_task())
     print(f"Logged in as {bot.user}")
 
 
