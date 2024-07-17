@@ -6,9 +6,9 @@ import pyfiglet
 import asyncio
 import os
 import re
+from typing import Optional, Literal
 
 pyfiglet.print_figlet('GSV 2')
-
 bot = commands.Bot(command_prefix='/', debug_guilds=None, intents=discord.Intents.all())
 conn: aiosqlite.Connection = None
 
@@ -38,7 +38,6 @@ async def status_task():
 
 @bot.event
 async def on_ready():
-    global conn
     bot.add_view(menu())
     bot.add_view(TutorialView())
     bot.add_view(Ticketweiterleitung())
@@ -48,18 +47,15 @@ async def on_ready():
 
 
 async def setup_database():
-    global conn
-    conn = await aiosqlite.connect("Data/tickets.db")
-    await conn.execute("""CREATE TABLE IF NOT EXISTS tickets (
+    await connect_execute(bot.db1, """CREATE TABLE IF NOT EXISTS tickets (
             channel_id INTEGER PRIMARY KEY,
             user_id INTEGER NOT NULL,
             blocked INTEGER DEFAULT 0,
             priority INTEGER DEFAULT 0)""")
 
-
+bot.db11 = "Data/tickets.db"
 async def has_ticket(user_id):
-    cursor = await conn.execute("SELECT * FROM tickets WHERE user_id = ?", (user_id,))
-    row = await cursor.fetchone()
+    row = await connect_execute(bot.db1, "SELECT * FROM tickets WHERE user_id = ?", (user_id,), datatype="One")
     return bool(row)
 
 
@@ -96,8 +92,7 @@ async def on_message(message: discord.Message):
             teamping = '<@&1216835597017153677>'  # hier teamping definieren !!!
             channel = await category.create_text_channel(f"ticket-{message.author.name}")
 
-            await conn.execute("INSERT INTO tickets (user_id, channel_id) VALUES (?, ?)", (message.author.id, channel.id))
-            await conn.commit()
+            await connect_execute(bot.db1, "INSERT INTO tickets (user_id, channel_id) VALUES (?, ?)", (message.author.id, channel.id))
 
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         embed = discord.Embed(title="WILLKOMMEN IM TICKET-SUPPORT!",
@@ -117,8 +112,7 @@ Ich habe deine Support-Anfrage erstellt und das Server-Team über dein Anliegen 
         await channel.send(file=file, embed=team_embed, view=TutorialView())
 
     if isinstance(message.channel, discord.DMChannel) and await has_ticket(message.author.id):
-        cursor = await conn.execute("SELECT channel_id FROM tickets WHERE user_id = ?", (message.author.id,))
-        row = await cursor.fetchone()
+        row = await connect_execute(bot.db1, "SELECT channel_id FROM tickets WHERE user_id = ?", (message.author.id,), datatype="One")
 
         if row:
             channel_id = row[0]
@@ -137,8 +131,7 @@ Ich habe deine Support-Anfrage erstellt und das Server-Team über dein Anliegen 
 
 
     elif message.channel.category_id == category_id and not isinstance(message.channel, discord.DMChannel):
-        cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (message.channel.id,))
-        row = await cursor.fetchone()
+        row = await connect_execute(bot.db1, "SELECT user_id FROM tickets WHERE channel_id = ?", (message.channel.id,), datatype="One")
         if row:
             user_id = row[0]
             user = bot.get_user(user_id)
@@ -195,37 +188,28 @@ class Ticketweiterleitung(discord.ui.View):
         options=options,
         custom_id="select")
     async def select_callback(self, select, interaction):
+        user_id_tuple = await connect_execute(bot.db1, "SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
+        user_id = user_id_tuple[0]
+        user = bot.get_user(user_id)
+            # hier teamping definieren !!!
+        if user is None:
+            user = await bot.fetch_user(user_id)
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            color = 0x2596be
         if select.values[0] == "admin":
-            cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            user_id_tuple = await cursor.fetchone()
-            user_id = user_id_tuple[0]
-            user = bot.get_user(user_id)
-            teamping = '<@&1216835574510522438>'  # hier teamping definieren !!!
-            if user is None:
-                user = await bot.fetch_user(user_id)
-                file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-                color = 0x2596be
             embed = discord.Embed(
                 title="Ticket wurde an Admin weitergeleitet!",
                 description=f"Ich habe dein Ticket an einen Admin weitergeleitet. Bitte habe etwas Geduld.",
                 color=color)
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-
+            teamping = '<@&1216835574510522438>'
             await user.send(file=file, embed=embed)
             await interaction.message.channel.send(teamping)
             await interaction.response.send_message("Das Ticket wurde an einen Admin weitergeleitet!")
 
 
         if select.values[0] == "moderator":
-            cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            user_id_tuple = await cursor.fetchone()
-            user_id = user_id_tuple[0]
-            user = bot.get_user(user_id)
             teamping = '<@&1216835586229534830>'
-            if user is None:
-                user = await bot.fetch_user(user_id)
-                file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-                color = 0x2596be
             embed = discord.Embed(
                 title="Ticket wurde an Moderator weitergeleitet!",
                 description=f"Ich habe dein Ticket an einen Moderator weitergeleitet. Bitte habe etwas Geduld.",
@@ -236,15 +220,7 @@ class Ticketweiterleitung(discord.ui.View):
             await interaction.response.send_message("Das Ticket wurde an einen Moderator weitergeleitet!")
 
         if select.values[0] == "developer":
-            cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            user_id_tuple = await cursor.fetchone()
-            user_id = user_id_tuple[0]
-            user = bot.get_user(user_id)
             teamping = '<@&1216835580982202460>'
-            if user is None:
-                user = await bot.fetch_user(user_id)
-                file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-                color = 0x2596be
             embed = discord.Embed(
                 title="Ticket wurde an Developer weitergeleitet!",
                 description=f"Ich habe dein Ticket an einen Developer weitergeleitet. Bitte habe etwas Geduld.",
@@ -255,15 +231,7 @@ class Ticketweiterleitung(discord.ui.View):
             await interaction.response.send_message("Das Ticket wurde an einen Developer weitergeleitet!")
 
         if select.values[0] == "management":
-            cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            user_id_tuple = await cursor.fetchone()
-            user_id = user_id_tuple[0]
-            user = bot.get_user(user_id)
             teamping = '<@&1216835578373607444>'
-            if user is None:
-                user = await bot.fetch_user(user_id)
-                file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-                color = 0x2596be
             embed = discord.Embed(
                 title="Ticket wurde an das Management weitergeleitet!",
                 description=f"Ich habe dein Ticket an das Management weitergeleitet. Bitte habe etwas Geduld.",
@@ -336,13 +304,10 @@ class Ticketmenu(discord.ui.View):
         placeholder="Was möchtest du tun?",
         options=options,
         custom_id="select")
-    async def select_callback(self, select, interaction):
-
+    async def select_callback(self, user, user_id, select, interaction):
+        user_id_tuple = await connect_execute(bot.db1, "SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,), datatype="One")
         if select.values[0] == "block":
-            cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            user_id_tuple = await cursor.fetchone()
-            user_id = user_id_tuple[0]
-            user = bot.get_user(user_id)
+
             if user is None:
                 user = await bot.fetch_user(user_id)
             await blacklist_db.add_blacklist(user_id)
@@ -356,21 +321,17 @@ class Ticketmenu(discord.ui.View):
             embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             await user.send(file=file, embed=embed)
             await interaction.response.send_message("Der User wurde blockiert!")
-            await conn.execute("DELETE FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            await conn.commit()
+            await connect_execute(bot.db1, "DELETE FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
             await asyncio.sleep(5)
             await interaction.message.channel.delete()
 
         if select.values[0] == "close":
-            cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            user_id_tuple = await cursor.fetchone()
             if user_id_tuple is None:
                 await interaction.response.send_message("No matching ticket found.")
                 return
             user_id = user_id_tuple[0]
 
-            await conn.execute("DELETE FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            await conn.commit()
+            await connect_execute(bot.db1, "DELETE FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
 
             user = bot.get_user(user_id)
             if user is None:
@@ -388,8 +349,6 @@ class Ticketmenu(discord.ui.View):
             await interaction.message.channel.delete()
 
         if select.values[0] == "claim":
-            cursor = await conn.execute("SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,))
-            user_id_tuple = await cursor.fetchone()
             user_id = user_id_tuple[0]
             user = bot.get_user(user_id)
             if user is None:
@@ -438,6 +397,15 @@ class TutorialView(discord.ui.View):
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
         await interaction.response.send_message(file=file, embed=embed, view=Ticketmenu(), ephemeral=True)
 
+async def connect_execute(database, query: str, injectiontuple: Optional[tuple], datatype: Optional[Literal["All", "One"]]):
+	async with aiosqlite.connect(database) as conn:
+		async with conn.execute(query, injectiontuple if injectiontuple is not None else None) as cur:
+			if datatype == "All":
+				return await cur.fetchall()
+			elif datatype == "One":
+				return await cur.fetchone()
+			else:
+				 await conn.commit()
 
 @bot.event
 async def on_command_error(ctx, error):
