@@ -1,10 +1,10 @@
 import asyncio
 import datetime
-from discord import slash_command
+from discord.commands import slash_command, Option
 import discord
 import aiosqlite
 from discord.ext import commands, tasks
-from ..main import connect_execute
+from main import connect_execute
 
 
 class Team(commands.Cog):
@@ -54,7 +54,7 @@ class Team(commands.Cog):
                 await connect_execute(self.bot.db, "INSERT INTO message_history VALUES (?, ?, ?)",
                                       (message.author.id, date, 1))
 
-    @app_commands.command(description="Auswertung der Teammitglieder history")
+    @slash_command(description="Auswertung der Teammitglieder history")
     async def history(self, ctx,
                       user: Option(discord.User, "Der User dessen history ausgewertet werden soll", required=True)):
         two_weeks_ago = (datetime.date.today() - datetime.timedelta(weeks=2)).isoformat()
@@ -146,11 +146,11 @@ class Team(commands.Cog):
         evaluation_channel = self.bot.get_channel(1249347322534559877)
 
         for member in teamrole.members:
-            result = await connect_execute(self.bot.db, "SELECT * FROM team_members WHERE user_id = ?", (member.id,),
-                                           datatype="One")
+            result = await connect_execute(self.bot.db, "SELECT strikes FROM team_members WHERE user_id = ?",
+                                           (member.id,), datatype="One")
             if result:
-                user_id, message_count, strikes = result
-                user = self.bot.get_user(user_id)
+                strikes = result[0]
+                user = member
 
                 # Calculate message count for the week
                 one_week_ago = (datetime.date.today() - datetime.timedelta(days=7)).isoformat()
@@ -173,9 +173,9 @@ class Team(commands.Cog):
 
                 await connect_execute(self.bot.db,
                                       "UPDATE team_members SET message_count = 0, strikes = ? WHERE user_id = ?",
-                                      (strikes, user_id,))
+                                      (strikes, member.id,))
                 await connect_execute(self.bot.db, "INSERT INTO goal_history VALUES (?, ?, ?)",
-                                      (user_id, one_week_ago, goal_reached))
+                                      (member.id, one_week_ago, goal_reached))
                 file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
                 color = 0x2596be
                 embed = discord.Embed(
@@ -192,7 +192,7 @@ class Team(commands.Cog):
                         if role in member.roles:
                             await member.remove_roles(role)
                     await member.remove_roles(teamrole)
-                    await connect_execute(self.bot.db, "DELETE FROM team_members WHERE user_id = ?", (user_id,))
+                    await connect_execute(self.bot.db, "DELETE FROM team_members WHERE user_id = ?", (member.id,))
             else:
                 await connect_execute(self.bot.db, "INSERT INTO team_members VALUES (?, ?, ?)", (member.id, 0, 1))
         self.conn.commit()
