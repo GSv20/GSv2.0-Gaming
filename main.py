@@ -17,16 +17,16 @@ guild_id = 1038267876622221332
 team_id = '<@&1216835597017153677>'
 
 if __name__ == '__main__':
-    for filename in os.listdir('Team'):
-        if filename.endswith('.py'):
-            bot.load_extension(f'Team.{filename[:-3]}')
-            print(f'Load Team_command: {filename[:-3]}')
-
-if __name__ == '__main__':
     for filename in os.listdir('Community'):
         if filename.endswith('.py'):
             bot.load_extension(f'Community.{filename[:-3]}')
             print(f'Load command: {filename[:-3]}')
+
+if __name__ == '__main__':
+    for filename in os.listdir('Team'):
+        if filename.endswith('.py'):
+            bot.load_extension(f'Team.{filename[:-3]}')
+            print(f'Load Team_command: {filename[:-3]}')
 
 async def status_task():
     while True:

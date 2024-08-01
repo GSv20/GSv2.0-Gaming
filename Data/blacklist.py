@@ -35,7 +35,7 @@ class blacklist(commands.Cog):
         self.db = modmail()
         self.bot.loop.run_until_complete(self.db.setup())
 
-    blacklist = SlashCommandGroup("dm_support", guild_only=True)
+    blacklist = SlashCommandGroup("dm_support")
 
     @blacklist.command(description="Sperre ein User")
     @commands.has_permissions(administrator=True)

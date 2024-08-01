@@ -10,13 +10,13 @@ from main import connect_execute
 class Team(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.loop.create_task(self.start_loops())
 
     async def start_loops(self):
         await self.bot.wait_until_ready()
         self.check_messages.start()
 
     async def cog_load(self):
+        await self.start_loops()
         self.bot.db = 'Data/team_messages.db'
         async with aiosqlite.connect('Data/team_messages.db') as conn:
             await conn.execute('''CREATE TABLE IF NOT EXISTS team_members
