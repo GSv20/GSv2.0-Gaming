@@ -9,6 +9,7 @@ from main import connect_execute
 
 class Team(commands.Cog):
     def __init__(self, bot):
+        bot.db = 'Data/teammessages.db'
         self.bot = bot
 
     async def start_loops(self):

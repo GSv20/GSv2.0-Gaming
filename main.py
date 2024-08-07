@@ -17,16 +17,16 @@ guild_id = 1038267876622221332
 team_id = '<@&1216835597017153677>'
 
 if __name__ == '__main__':
-    for filename in os.listdir('Community'):
-        if filename.endswith('.py'):
-            bot.load_extension(f'Community.{filename[:-3]}')
-            print(f'Load command: {filename[:-3]}')
-
-if __name__ == '__main__':
     for filename in os.listdir('Team'):
         if filename.endswith('.py'):
             bot.load_extension(f'Team.{filename[:-3]}')
             print(f'Load Team_command: {filename[:-3]}')
+
+if __name__ == '__main__':
+    for filename in os.listdir('Community'):
+        if filename.endswith('.py'):
+            bot.load_extension(f'Community.{filename[:-3]}')
+            print(f'Load command: {filename[:-3]}')
 
 async def status_task():
     while True:
@@ -53,7 +53,7 @@ async def setup_database():
             blocked INTEGER DEFAULT 0,
             priority INTEGER DEFAULT 0)""")
 
-bot.db11 = "Data/tickets.db"
+bot.db1 = "Data/tickets.db"
 async def has_ticket(user_id):
     row = await connect_execute(bot.db1, "SELECT * FROM tickets WHERE user_id = ?", (user_id,), datatype="One")
     return bool(row)
@@ -304,7 +304,7 @@ class Ticketmenu(discord.ui.View):
         placeholder="Was möchtest du tun?",
         options=options,
         custom_id="select")
-    async def select_callback(self, user, user_id, select, interaction):
+    async def select_callback(self, select, interaction):
         user_id_tuple = await connect_execute(bot.db1, "SELECT user_id FROM tickets WHERE channel_id = ?", (interaction.channel.id,), datatype="One")
         if select.values[0] == "block":
 
@@ -396,16 +396,6 @@ class TutorialView(discord.ui.View):
             color=color)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
         await interaction.response.send_message(file=file, embed=embed, view=Ticketmenu(), ephemeral=True)
-
-async def connect_execute(database, query: str, injectiontuple: Optional[tuple], datatype: Optional[Literal["All", "One"]]):
-	async with aiosqlite.connect(database) as conn:
-		async with conn.execute(query, injectiontuple if injectiontuple is not None else None) as cur:
-			if datatype == "All":
-				return await cur.fetchall()
-			elif datatype == "One":
-				return await cur.fetchone()
-			else:
-				 await conn.commit()
 
 @bot.event
 async def on_command_error(ctx, error):
