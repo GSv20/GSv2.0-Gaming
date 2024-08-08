@@ -10,10 +10,11 @@ from discord.commands import slash_command, Option
 from discord import ButtonStyle
 from .Adminsystem import connect_execute
 
+
 class ModSystem(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.timeout_role_id = 1184593699523526696 
+        self.timeout_role_id = 1184593699523526696
         self.knast_role_id = self.timeout_role_id
         self.db_path = 'mod_sys.db'
         self.create_database()
@@ -21,48 +22,57 @@ class ModSystem(commands.Cog):
     @tasks.loop(minutes=10)
     async def knastlist(self):
         guild = self.bot.get_guild(913082943495344179)
-        channel = guild.get_channel(1234567890123456789) # channel id für den channel wo die knastliste reinkommen soll
+        channel = guild.get_channel(1234567890123456789)  # channel id für den channel wo die knastliste reinkommen soll
         users = await connect_execute("Data/knast.db", "SELECT uid, reason, mod_id FROM servers", datatype="All")
-        knast_members = [(guild.get_member(user_id), reason, guild.get_member(mod_id)) for user_id, reason, mod_id in users if guild.get_member(user_id)]
-        
+        knast_members = [(guild.get_member(user_id), reason, guild.get_member(mod_id)) for user_id, reason, mod_id in
+                         users if guild.get_member(user_id)]
+
         embed = discord.Embed(
             title="Benutzer im Knast",
             color=discord.Color.red()
         )
         if knast_members != []:
             if users <= 25:
-                [embed.add_field(name=member.name, value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}") for member, reason, mod in knast_members]
+                [embed.add_field(name=member.name,
+                                 value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}") for
+                 member, reason, mod in knast_members]
             else:
-                embedcount = (int(len(users)/25)+1)
+                embedcount = (int(len(users) / 25) + 1)
                 embedlist = []
-                rest = round(len(users)/embedcount)
+                rest = round(len(users) / embedcount)
                 for i in range(embedcount):
                     if i == 1:
                         fembed = embed
-                        [embed.add_field(name=member.name, value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}") for member, reason, mod in knast_members[:rest]]
+                        [embed.add_field(name=member.name,
+                                         value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}")
+                         for member, reason, mod in knast_members[:rest]]
                         [knast_members.remove(a) for a in knast_members[:rest]]
                         embedlist.append(fembed)
                     else:
                         if len(knast_members) <= rest:
                             nembed = discord.Embed(title="", description="", color=embed.color)
-                            [embed.add_field(name=member.name, value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}") for member, reason, mod in knast_members]
+                            [embed.add_field(name=member.name,
+                                             value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}")
+                             for member, reason, mod in knast_members]
                             embedlist.append(nembed)
                         else:
                             nembed = discord.Embed(title="", description="", color=embed.color)
-                            [embed.add_field(name=member.name, value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}") for member, reason, mod in knast_members[:rest]]
+                            [embed.add_field(name=member.name,
+                                             value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}")
+                             for member, reason, mod in knast_members[:rest]]
                             [knast_members.remove(a) for a in knast_members[:rest]]
                             embedlist.append(nembed)
         else:
             embed.description = "Es befinden sich keine Benutzer im Knast."
         try:
-            message = await channel.fetch_message(2345678901234567890) # message id von der nachricht, die die liste beinhaltet
+            message = await channel.fetch_message(
+                2345678901234567890)  # message id von der nachricht, die die liste beinhaltet
             if not embedlist:
                 await message.edit(embed=embed)
             else:
                 await message.edit(embeds=embedlist)
         except discord.NotFound:
             print("knastlist: nachricht gibts nich")
-
 
     async def create_database(self):
         try:
@@ -100,14 +110,19 @@ class ModSystem(commands.Cog):
 
         dm_keywords = ["dm", "direct message", "private message"]
         if any([keyword in message.content.lower() for keyword in dm_keywords]):
-            row = await connect_execute(self.db_path, "SELECT warns FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1", (message.author.id, message.guild.id), datatype="One")
+            row = await connect_execute(self.db_path,
+                                        "SELECT warns FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1",
+                                        (message.author.id, message.guild.id), datatype="One")
             if row:
                 warns = row[0] + 1
             else:
                 warns = 1
 
                 warn_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                await connect_execute(self.db_path, "INSERT INTO WarnList (user_id, guild_id, warns, warn_reason, mod_id, warn_time) VALUES (?, ?, ?, ?, ?, ?)", (message.author.id, message.guild.id, warns, "Mentioning DMs is not allowed", self.bot.user.id, warn_time))
+                await connect_execute(self.db_path,
+                                      "INSERT INTO WarnList (user_id, guild_id, warns, warn_reason, mod_id, warn_time) VALUES (?, ?, ?, ?, ?, ?)",
+                                      (message.author.id, message.guild.id, warns, "Mentioning DMs is not allowed",
+                                       self.bot.user.id, warn_time))
 
             if warns <= 3:
                 await message.channel.send(
@@ -123,12 +138,12 @@ class ModSystem(commands.Cog):
         squad = member.public_flags
         view = AdminView(member, reason)
 
-        knastuser = await connect_execute(self.db_path, "SELECT uid FROM servers WHERE uid = ?", (member.id,), datatype="One")
+        knastuser = await connect_execute(self.db_path, "SELECT uid FROM servers WHERE uid = ?", (member.id,),
+                                          datatype="One")
         if knastuser:
             view.children[5].disabled = True
         else:
             view.children[6].disabled = True
-
 
         if squad.hypesquad_bravery:
             squad = "House of Bravery"
@@ -141,9 +156,10 @@ class ModSystem(commands.Cog):
 
         embed = discord.Embed(
             title=f"{member.name} | AdminPanel",
-            description=(f"`👥 User Name` - {member.name} \n `🆔 User ID` - {member.id} \n `👥 Display/Server name` - {member.display_name} \n "
-                         f"`⏰ Created At` - <t:{int(member.created_at.timestamp())}:R> \n `⏰ Joined At` - <t:{int(member.joined_at.timestamp())}:R> \n"
-                         f"`🪪 Hypersquad` {squad} \n `📢 Mention` - {member.mention} \n `🔗 Avatar Url` - [Click Here]({member.display_avatar.url})"),
+            description=(
+                f"`👥 User Name` - {member.name} \n `🆔 User ID` - {member.id} \n `👥 Display/Server name` - {member.display_name} \n "
+                f"`⏰ Created At` - <t:{int(member.created_at.timestamp())}:R> \n `⏰ Joined At` - <t:{int(member.joined_at.timestamp())}:R> \n"
+                f"`🪪 Hypersquad` {squad} \n `📢 Mention` - {member.mention} \n `🔗 Avatar Url` - [Click Here]({member.display_avatar.url})"),
             color=0x2596be)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
         embed.set_thumbnail(url=member.display_avatar.url)
@@ -179,11 +195,16 @@ class ModSystem(commands.Cog):
     @commands.has_role(1044557317947019264)
     async def warnings(self, ctx, member: discord.Member):
         warns_info = []
-        rows = await connect_execute(self.db_path, "SELECT warn_id, mod_id, warn_reason, warn_time FROM WarnList WHERE user_id = ? AND guild_id = ?", (member.id, ctx.guild.id), datatype="All")
+        rows = await connect_execute(self.db_path,
+                                     "SELECT warn_id, mod_id, warn_reason, warn_time FROM WarnList WHERE user_id = ? AND guild_id = ?",
+                                     (member.id, ctx.guild.id), datatype="All")
         for row in rows:
             warn_id, mod_id, warn_reason, warn_time = row
             warn_time = datetime.datetime.strptime(warn_time, '%Y-%m-%d %H:%M:%S')
-            warns_info.append((f"**Warn-ID:** __{warn_id}__ | **Warn ausgestellt am:** {warn_time.strftime('%Y-%m-%d %H:%M:%S')}", f"**Moderator:** <@{mod_id}> | **Mod-ID**: __{mod_id}__", f"**> Grund:**\n```{warn_reason}```"))
+            warns_info.append((
+                              f"**Warn-ID:** __{warn_id}__ | **Warn ausgestellt am:** {warn_time.strftime('%Y-%m-%d %H:%M:%S')}",
+                              f"**Moderator:** <@{mod_id}> | **Mod-ID**: __{mod_id}__",
+                              f"**> Grund:**\n```{warn_reason}```"))
 
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         warnings_embed = discord.Embed(title=f"`⚠️` Warn Liste {member.name}")
@@ -199,8 +220,9 @@ class ModSystem(commands.Cog):
             warnings_embed.description = "__**Liste der Warns**__"
             warnings_embed.color = 0x2596be
 
-            [warnings_embed.add_field(name=f"{warntime}", value=f"{mod}\n{reason}", inline=False) for warntime, mod, reason in warns_info]
-        
+            [warnings_embed.add_field(name=f"{warntime}", value=f"{mod}\n{reason}", inline=False) for
+             warntime, mod, reason in warns_info]
+
         await ctx.respond(file=file, embed=warnings_embed, ephemeral=False)
 
     @teampanel.error
@@ -233,9 +255,10 @@ class ModSystem(commands.Cog):
 
     @slash_command(description="Rufe das Knast Menü auf")
     async def knastmenu(self, ctx):
-        embed = discord.Embed(title="Knast Menü", description="Wähle hier aus was du machen möchtest", color=discord.Colour.random())
+        embed = discord.Embed(title="Knast Menü", description="Wähle hier aus was du machen möchtest",
+                              color=discord.Colour.random())
         await ctx.respond(embed=embed, view=KnastMenu())
-        
+
 
 class KnastMenu(discord.ui.View):
     def __init__(self):
@@ -256,7 +279,7 @@ class KnastMenu(discord.ui.View):
             color=discord.Color.red()
         )
         self.disable_all_buttons()
-        channel = interaction.guild.get_channel(1251558364635332689) # Replace with your channel ID
+        channel = interaction.guild.get_channel(1251558364635332689)  # Replace with your channel ID
         if channel:
             await channel.send(embed=embed, view=BesuchButton(interaction.user, 1184593699523526696))
 
@@ -275,7 +298,7 @@ class KnastMenu(discord.ui.View):
             color=discord.Color.red()
         )
         self.disable_all_buttons()
-        channel = interaction.guild.get_channel(1251558364635332689) # Replace with your channel ID
+        channel = interaction.guild.get_channel(1251558364635332689)  # Replace with your channel ID
         if channel:
             await channel.send(embed=embed, view=EntlassungButton(interaction.user, 1184593699523526696))
 
@@ -283,6 +306,7 @@ class KnastMenu(discord.ui.View):
         for child in self.children:
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
+
 
 class BesuchButton(discord.ui.View):
     def __init__(self, user, role):
@@ -298,7 +322,7 @@ class BesuchButton(discord.ui.View):
 
     @discord.ui.button(label="Annehmen", style=discord.ButtonStyle.success, custom_id="besuchen_button", emoji="✔")
     async def besuchen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        member = interaction.guild.get_member(self.user.id) 
+        member = interaction.guild.get_member(self.user.id)
         role = interaction.guild.get_role(1184550310451101697)
         if member and role:
             await member.add_roles(role)
@@ -344,6 +368,7 @@ class BesuchButton(discord.ui.View):
                 pass
 
         asyncio.create_task(remove_role_after_delay())
+
 
 class EntlassungButton(discord.ui.View):
     def __init__(self, user, role):
@@ -397,21 +422,15 @@ class EntlassungButton(discord.ui.View):
                 child.disabled = True
 
 
-
-
-
 def setup(bot):
     bot.add_cog(ModSystem(bot))
 
 
 class AdminView(discord.ui.View):
-    def __init__(self, bot, member, reason, guild, ctx):
+    def __init__(self, member, reason):
         super().__init__()
-        self.bot = bot
         self.member = member
         self.reason = reason
-        self.guild = guild
-        self.ctx = ctx
         self.mdb = "mod_sys.db"
         self.kdb = "Data/knast.db"
         self.knast_role_id = 1184593699523526696
@@ -420,8 +439,12 @@ class AdminView(discord.ui.View):
     @discord.ui.button(label="Warn", emoji="🚧")
     async def warn_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         warn_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await connect_execute(self.mdb, "INSERT INTO WarnList (user_id, guild_id, warns, warn_reason, mod_id, warn_time) VALUES (?, ?, ?, ?, ?, ?)", (self.member.id, interaction.guild.id, 1, self.reason, interaction.user.id, warn_time))
-        row = await connect_execute(self.mdb, "SELECT warn_id FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1", (self.member.id, interaction.guild.id), datatype="One")
+        await connect_execute(self.mdb,
+                              "INSERT INTO WarnList (user_id, guild_id, warns, warn_reason, mod_id, warn_time) VALUES (?, ?, ?, ?, ?, ?)",
+                              (self.member.id, interaction.guild.id, 1, self.reason, interaction.user.id, warn_time))
+        row = await connect_execute(self.mdb,
+                                    "SELECT warn_id FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1",
+                                    (self.member.id, interaction.guild.id), datatype="One")
         warn_id = row[0]
 
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
@@ -455,11 +478,16 @@ class AdminView(discord.ui.View):
     @discord.ui.button(label="Warnings", style=discord.ButtonStyle.primary)
     async def warnings_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         warns_info = []
-        rows = await connect_execute(self.db_path, "SELECT warn_id, mod_id, warn_reason, warn_time FROM WarnList WHERE user_id = ? AND guild_id = ?", (self.member.id, interaction.guild.id), datatype="All")
+        rows = await connect_execute(self.db_path,
+                                     "SELECT warn_id, mod_id, warn_reason, warn_time FROM WarnList WHERE user_id = ? AND guild_id = ?",
+                                     (self.member.id, interaction.guild.id), datatype="All")
         for row in rows:
             warn_id, mod_id, warn_reason, warn_time = row
             warn_time = datetime.datetime.strptime(warn_time, '%Y-%m-%d %H:%M:%S')
-            warns_info.append((f"**Warn-ID:** __{warn_id}__ | **Warn ausgestellt am:** {warn_time.strftime('%Y-%m-%d %H:%M:%S')}", f"**Moderator:** <@{mod_id}> | **Mod-ID**: __{mod_id}__", f"**> Grund:**\n```{warn_reason}```"))
+            warns_info.append((
+                              f"**Warn-ID:** __{warn_id}__ | **Warn ausgestellt am:** {warn_time.strftime('%Y-%m-%d %H:%M:%S')}",
+                              f"**Moderator:** <@{mod_id}> | **Mod-ID**: __{mod_id}__",
+                              f"**> Grund:**\n```{warn_reason}```"))
 
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         warnings_embed = discord.Embed(title=f"`⚠️` Warn Liste {self.member.name}")
@@ -475,16 +503,20 @@ class AdminView(discord.ui.View):
             warnings_embed.description = "__**Liste der Warns**__"
             warnings_embed.color = 0x2596be
 
-            [warnings_embed.add_field(name=f"{warntime}", value=f"{mod}\n{reason}", inline=False) for warntime, mod, reason in warns_info]
-        
+            [warnings_embed.add_field(name=f"{warntime}", value=f"{mod}\n{reason}", inline=False) for
+             warntime, mod, reason in warns_info]
+
         await interaction.response.send_message(file=file, embed=warnings_embed, ephemeral=False)
 
     @discord.ui.button(label="Unwarn", emoji="🍀")
     async def unwarn_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         warn_id = None  # Define warn_id variable
-        row = await connect_execute(self.mdb, "SELECT warn_id FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1", (self.member.id, interaction.guild.id), datatype="One")
+        row = await connect_execute(self.mdb,
+                                    "SELECT warn_id FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1",
+                                    (self.member.id, interaction.guild.id), datatype="One")
         warn_id = row[0]
-        await connect_execute(self.mdb, "DELETE FROM WarnList WHERE user_id = ? AND guild_id = ? AND warn_id = ?",(self.member.id, interaction.guild.id, warn_id))
+        await connect_execute(self.mdb, "DELETE FROM WarnList WHERE user_id = ? AND guild_id = ? AND warn_id = ?",
+                              (self.member.id, interaction.guild.id, warn_id))
 
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         unwarnUser_embed = discord.Embed(
@@ -521,16 +553,18 @@ class AdminView(discord.ui.View):
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
 
         if self.member == interaction.guild.owner:
-            embed.description='Der Owner kann nicht getimeouted werden'
+            embed.description = 'Der Owner kann nicht getimeouted werden'
         elif self.member == self.bot.user:
-            embed.description ='Ich kann nicht getimeouted werden'
+            embed.description = 'Ich kann nicht getimeouted werden'
         elif self.member == interaction.user:
             embed.description = 'Du kannst dich nicht selber timeouten'
         else:
             embed.title = ''
             embed.description = f'{self.member.mention} wurde getimeouted'
             try:
-                membed = discord.Embed(title="Getimeouted", description=f"Du wurdest im server {interaction.guild.name} getimeouted\nGrund: {self.reason}", color=0x2596be)
+                membed = discord.Embed(title="Getimeouted",
+                                       description=f"Du wurdest im server {interaction.guild.name} getimeouted\nGrund: {self.reason}",
+                                       color=0x2596be)
                 await self.member.send(embed=membed)
             except:
                 embed.description += "\n\nBenutzer konnte nicht angeschrieben werden"
@@ -544,7 +578,7 @@ class AdminView(discord.ui.View):
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         embed = discord.Embed(title='<:nope:1073700944941957291> | Error', color=0x2596be)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-        
+
         if self.member == self.guild.owner:
             embed.description = 'Der Owner kann nicht gekickt werden'
         elif self.member == self.bot.user:
@@ -555,7 +589,9 @@ class AdminView(discord.ui.View):
             embed.title = ""
             embed.description = f"{self.member.name} wurde von {interaction.guild.name} gekickt"
             try:
-                membed = discord.Embed(title="Gekickt", description=f"Du wurdest im server {interaction.guild.name} gekickt\nGrund: {self.reason}", color=0x2596be)
+                membed = discord.Embed(title="Gekickt",
+                                       description=f"Du wurdest im server {interaction.guild.name} gekickt\nGrund: {self.reason}",
+                                       color=0x2596be)
                 await self.member.send(embed=membed)
             except:
                 embed.description += "\n\nBenutzer konnte nicht angeschrieben werden"
@@ -569,7 +605,7 @@ class AdminView(discord.ui.View):
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         embed = discord.Embed(title='<:nope:1073700944941957291> | Error', color=0x2596be)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-        
+
         if self.member == self.guild.owner:
             embed.description = 'Der Owner kann nicht gebannt werden!'
         elif self.member == self.bot.user:
@@ -580,7 +616,9 @@ class AdminView(discord.ui.View):
             embed.title = ""
             embed.description = f"{self.member.name} wurde von {interaction.guild.name} gebannt"
             try:
-                membed = discord.Embed(title="Gebannt", description=f"Du wurdest im server {interaction.guild.name} gebannt\nGrund: {self.reason}", color=0x2596be)
+                membed = discord.Embed(title="Gebannt",
+                                       description=f"Du wurdest im server {interaction.guild.name} gebannt\nGrund: {self.reason}",
+                                       color=0x2596be)
                 await self.member.send(embed=membed)
             except discord.Forbidden:
                 embed.description += "\n\nBenutzer konnte nicht angeschrieben werden"
@@ -588,7 +626,7 @@ class AdminView(discord.ui.View):
             await self.member.ban(reason=f"wurde von {interaction.user.name} übers Admin panel gebannt")
 
         await interaction.response.send_message(file=file, embed=embed, ephemeral=True)
-    
+
     @discord.ui.button(label="Knast", style=discord.ButtonStyle.danger)
     async def knast_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         role = interaction.guild.get_role(self.knast_role_id)
@@ -605,7 +643,8 @@ class AdminView(discord.ui.View):
                         f"`🚨` **Grund:** {self.reason}")
 
         try:
-            await connect_execute(self.kdb, "INSERT INTO servers (uid, reason, mod_id) VALUES (?, ?, ?)", (self.member.id, self.reason, interaction.user.id))
+            await connect_execute(self.kdb, "INSERT INTO servers (uid, reason, mod_id) VALUES (?, ?, ?)",
+                                  (self.member.id, self.reason, interaction.user.id))
 
             await self.member.add_roles(role)
             await interaction.response.send_message(embed=embed, ephemeral=True)

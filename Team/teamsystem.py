@@ -4,13 +4,13 @@ from discord.commands import slash_command, Option
 import discord
 import aiosqlite
 from discord.ext import commands, tasks
-from main import connect_execute
+from .Adminsystem import connect_execute
 
 
 class Team(commands.Cog):
     def __init__(self, bot):
-        bot.db = 'Data/teammessages.db'
         self.bot = bot
+        bot.db = 'Data/team_messages.db'
 
     async def start_loops(self):
         await self.bot.wait_until_ready()
@@ -18,7 +18,7 @@ class Team(commands.Cog):
 
     async def cog_load(self):
         await self.start_loops()
-        self.bot.db = 'Data/team_messages.db'
+
         async with aiosqlite.connect('Data/team_messages.db') as conn:
             await conn.execute('''CREATE TABLE IF NOT EXISTS team_members
                                 (user_id INTEGER PRIMARY KEY, message_count INTEGER, strikes INTEGER)''')

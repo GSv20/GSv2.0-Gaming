@@ -1,6 +1,18 @@
 from datetime import datetime, timedelta
-import discord
+import discord, aiosqlite
+from typing import Optional, Literal
 from discord.ext import commands
+
+
+async def connect_execute(database, query: str, injectiontuple: Optional[tuple]=None, datatype: Optional[Literal["All", "One"]]=None):
+	async with aiosqlite.connect(database) as conn:
+		async with conn.execute(query, injectiontuple if injectiontuple is not None else None) as cur:
+			if datatype == "All":
+				return await cur.fetchall()
+			elif datatype == "One":
+				return await cur.fetchone()
+			else:
+				 await conn.commit()
 
 class AntiSpam(commands.Cog):
 
@@ -32,11 +44,9 @@ class AntiSpam(commands.Cog):
             check = violations.update_rate_limit()
 
             if check:
-                until = datetime.utcnow() + timedelta(minutes=10)
+                until = datetime.now() + timedelta(minutes=10)
                 await message.author.timeout(until)
                 try:
-                    file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-                    color = 0x2596be
                     embed = discord.Embed(title="Don't Spam", description='Spamme bitte nicht die Kanäle voll\nIch musste dich daher Timeouten\n\nUnd ich werde es wiedertun wenn du weitermachst', color=color)
                     embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
                     await message.author.send(file=file, embed=embed)
@@ -44,6 +54,32 @@ class AntiSpam(commands.Cog):
                     print(f"Konnte keine Nachricht an {message.author.name} senden")
                     return
 
+class Massrole(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.slash_command(description="Gibt allen Mitgliedern die ausgewählte Rolle")
+    @commands.has_permissions(administrator=True)
+    async def massrole(self, ctx, role: discord.Role):
+        guild = ctx.guild
+        for member in guild.members:
+            try:
+                await member.add_roles(role)
+            except discord.HTTPException as e:
+                print(f"Fehler beim Hinzufügen der Rolle zu {member}: {e}")
+        await ctx.respond(f"Rolle {role.name} wurde allen Mitgliedern hinzugefügt.")
+
+    @massrole.error
+    async def massrole_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
+            em = discord.Embed(title='Support Anfrage',
+                               description="Leider ist dies eine Admin Option\nWenn du Hilfe brauchst melde dich gerne im Support:\n<#1073700885886152837>",
+                               color=discord.Color.red())
+            em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+            await ctx.respond(file=file, embed=em, delete_after=15)
+            print(f'{ctx.author.name} hat versucht /massrole auszuführen')
 
 def setup(bot):
+    bot.add_cog(Massrole(bot))
     bot.add_cog(AntiSpam(bot))
