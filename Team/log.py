@@ -6,7 +6,6 @@ CHANID = 1218317295345074298
 
 
 class Log(commands.Cog):
-    file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
     color = 0x2596be
 
     def __init__(self, bot):
@@ -23,10 +22,11 @@ class Log(commands.Cog):
             timestamp=datetime.datetime.now())
         em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
 
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         channel = await self.bot.fetch_channel(CHANID)
 
         if channel:
-            await channel.send(file=self.file, embed=em)
+            await channel.send(file=file, embed=em)
 
     @commands.Cog.listener("on_guild_channel_create")
     async def log_on_guild_channel_create(self, channel):
@@ -37,10 +37,11 @@ class Log(commands.Cog):
             timestamp=datetime.datetime.now())
         em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
 
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         channel = await self.bot.fetch_channel(CHANID)
 
         if channel:
-            await channel.send(file=self.file, embed=em)
+            await channel.send(file=file, embed=em)
 
     @commands.Cog.listener("on_guild_channel_delete")
     async def log_on_guild_channel_delete(self, channel):
@@ -51,10 +52,11 @@ class Log(commands.Cog):
             timestamp=datetime.datetime.now())
         em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
 
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         channel = await self.bot.fetch_channel(CHANID)
 
         if channel:
-            await channel.send(file=self.file, embed=em)
+            await channel.send(file=file, embed=em)
 
     @commands.Cog.listener("on_member_update")
     async def log_update_member(self, before, after):
@@ -85,10 +87,11 @@ class Log(commands.Cog):
             return
 
         em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         channel = await self.bot.fetch_channel(CHANID)
 
         if channel:
-            await channel.send(file=self.file, embed=em)
+            await channel.send(file=file, embed=em)
 
     @commands.Cog.listener("on_message_edit")
     async def log_edit_message(self, before, after):
@@ -102,10 +105,12 @@ class Log(commands.Cog):
             color=self.color,
             timestamp=datetime.datetime.now())
         em.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
+
+        file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         channel = await self.bot.fetch_channel(CHANID)
 
         if channel:
-            await channel.send(file=self.file, embed=em)
+            await channel.send(file=file, embed=em)
 
     @commands.Cog.listener("on_message_delete")
     async def log_deleted_message(self, message):

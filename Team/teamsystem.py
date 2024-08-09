@@ -16,9 +16,7 @@ class Team(commands.Cog):
         await self.bot.wait_until_ready()
         self.check_messages.start()
 
-    async def cog_load(self):
-        await self.start_loops()
-
+    async def on_ready(self):
         async with aiosqlite.connect(self.bot.db) as conn:
             await conn.execute('''CREATE TABLE IF NOT EXISTS team_members
                                 (user_id INTEGER PRIMARY KEY, message_count INTEGER, strikes INTEGER)''')
@@ -27,6 +25,7 @@ class Team(commands.Cog):
             await conn.execute('''CREATE TABLE IF NOT EXISTS goal_history
                                 (user_id INTEGER, week_start TEXT, goal_reached TEXT)''')
             await conn.commit()
+            await self.start_loops()
 
     def seconds_until_saturday_noon(self):
         now = datetime.datetime.now()

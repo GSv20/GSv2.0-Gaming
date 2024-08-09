@@ -183,10 +183,9 @@ class ModSystem(commands.Cog):
             error_embed.set_thumbnail(url=ctx.guild.icon.url)
             error_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             error_embed.set_author(name=f"Purge | GSv2.0", icon_url=ctx.bot.user.avatar.url)
-
             await ctx.respond(file=file, embed=error_embed, delete_after=6, ephemeral=True)
         else:
-            deleted = await ctx.channel.purge(limit=amount)
+            deleted = amount
             file2 = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             success_embed = discord.Embed(
                 title="`✅` Erfolgreich!",
@@ -195,6 +194,7 @@ class ModSystem(commands.Cog):
             success_embed.set_thumbnail(url=ctx.guild.icon.url)
             success_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
             success_embed.set_author(name=f"Purge | GSv2.0", icon_url=ctx.bot.user.avatar.url)
+            await ctx.channel.purge(limit=amount)
             await ctx.respond(file=file2, embed=success_embed, delete_after=10, ephemeral=True)
 
     @slash_command(description="Zeige alle Warns eines Users aus dem Server an")
