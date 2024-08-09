@@ -10,7 +10,7 @@ from .Adminsystem import connect_execute
 class Team(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        bot.db = 'Data/team_messages.db'
+        bot.db = 'Data/team.db'
 
     async def start_loops(self):
         await self.bot.wait_until_ready()
@@ -19,7 +19,7 @@ class Team(commands.Cog):
     async def cog_load(self):
         await self.start_loops()
 
-        async with aiosqlite.connect('Data/team_messages.db') as conn:
+        async with aiosqlite.connect(self.bot.db) as conn:
             await conn.execute('''CREATE TABLE IF NOT EXISTS team_members
                                 (user_id INTEGER PRIMARY KEY, message_count INTEGER, strikes INTEGER)''')
             await conn.execute('''CREATE TABLE IF NOT EXISTS message_history

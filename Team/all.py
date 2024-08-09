@@ -16,21 +16,28 @@ class ModSystem(commands.Cog):
         self.bot = bot
         self.timeout_role_id = 1184593699523526696
         self.knast_role_id = self.timeout_role_id
-        self.db_path = 'mod_sys.db'
-        self.create_database()
+        self.db_path = 'Data/team.db'
+
+    async def cog_load(self):
+        await self.create_database()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        if not self.knastlist.is_running():
+            self.knastlist.start()
+            print('knastliste wurde geladen')
 
     @tasks.loop(minutes=10)
     async def knastlist(self):
         guild = self.bot.get_guild(913082943495344179)
-        channel = guild.get_channel(1234567890123456789)  # channel id für den channel wo die knastliste reinkommen soll
-        users = await connect_execute("Data/knast.db", "SELECT uid, reason, mod_id FROM servers", datatype="All")
+        channel = guild.get_channel(1271573038034452541)  # channel id für den channel wo die knastliste reinkommen soll
+        users = await connect_execute(self.db_path, "SELECT uid, reason, mod_id FROM servers", datatype="All")
         knast_members = [(guild.get_member(user_id), reason, guild.get_member(mod_id)) for user_id, reason, mod_id in
                          users if guild.get_member(user_id)]
 
         embed = discord.Embed(
             title="Benutzer im Knast",
-            color=discord.Color.red()
-        )
+            color=discord.Color.red())
         if knast_members != []:
             if users <= 25:
                 [embed.add_field(name=member.name,
@@ -65,8 +72,7 @@ class ModSystem(commands.Cog):
         else:
             embed.description = "Es befinden sich keine Benutzer im Knast."
         try:
-            message = await channel.fetch_message(
-                2345678901234567890)  # message id von der nachricht, die die liste beinhaltet
+            message = await channel.fetch_message()  # message id von der nachricht, die die liste beinhaltet
             if not embedlist:
                 await message.edit(embed=embed)
             else:
@@ -141,9 +147,9 @@ class ModSystem(commands.Cog):
         knastuser = await connect_execute(self.db_path, "SELECT uid FROM servers WHERE uid = ?", (member.id,),
                                           datatype="One")
         if knastuser:
-            view.children[5].disabled = True
-        else:
             view.children[6].disabled = True
+        else:
+            view.children[7].disabled = True
 
         if squad.hypesquad_bravery:
             squad = "House of Bravery"
@@ -431,18 +437,17 @@ class AdminView(discord.ui.View):
         super().__init__()
         self.member = member
         self.reason = reason
-        self.mdb = "mod_sys.db"
-        self.kdb = "Data/knast.db"
+        self.db_path = "Data/team.db"
         self.knast_role_id = 1184593699523526696
         self.cooldown = CooldownMapping.from_cooldown(1, 300, commands.BucketType.member)
 
     @discord.ui.button(label="Warn", emoji="🚧")
     async def warn_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         warn_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await connect_execute(self.mdb,
+        await connect_execute(self.db_path,
                               "INSERT INTO WarnList (user_id, guild_id, warns, warn_reason, mod_id, warn_time) VALUES (?, ?, ?, ?, ?, ?)",
                               (self.member.id, interaction.guild.id, 1, self.reason, interaction.user.id, warn_time))
-        row = await connect_execute(self.mdb,
+        row = await connect_execute(self.db_path,
                                     "SELECT warn_id FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1",
                                     (self.member.id, interaction.guild.id), datatype="One")
         warn_id = row[0]
@@ -511,11 +516,11 @@ class AdminView(discord.ui.View):
     @discord.ui.button(label="Unwarn", emoji="🍀")
     async def unwarn_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         warn_id = None  # Define warn_id variable
-        row = await connect_execute(self.mdb,
+        row = await connect_execute(self.db_path,
                                     "SELECT warn_id FROM WarnList WHERE user_id = ? AND guild_id = ? ORDER BY warn_id DESC LIMIT 1",
                                     (self.member.id, interaction.guild.id), datatype="One")
         warn_id = row[0]
-        await connect_execute(self.mdb, "DELETE FROM WarnList WHERE user_id = ? AND guild_id = ? AND warn_id = ?",
+        await connect_execute(self.db_path, "DELETE FROM WarnList WHERE user_id = ? AND guild_id = ? AND warn_id = ?",
                               (self.member.id, interaction.guild.id, warn_id))
 
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
@@ -643,7 +648,7 @@ class AdminView(discord.ui.View):
                         f"`🚨` **Grund:** {self.reason}")
 
         try:
-            await connect_execute(self.kdb, "INSERT INTO servers (uid, reason, mod_id) VALUES (?, ?, ?)",
+            await connect_execute(self.db_path, "INSERT INTO servers (uid, reason, mod_id) VALUES (?, ?, ?)",
                                   (self.member.id, self.reason, interaction.user.id))
 
             await self.member.add_roles(role)
@@ -661,7 +666,7 @@ class AdminView(discord.ui.View):
             color=discord.Color.green()
         )
         try:
-            await connect_execute(self.kdb, "DELETE FROM servers WHERE uid = ?", (self.member.id,))
+            await connect_execute(self.db_path, "DELETE FROM servers WHERE uid = ?", (self.member.id,))
 
             role = interaction.guild.get_role(self.knast_role_id)
 

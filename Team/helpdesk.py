@@ -3,13 +3,13 @@ import discord
 import asyncio
 
 
-class helpdesk(commands.Cog):
+class HelpdeskCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.bot.add_view(helpdesk_View())
+        self.bot.add_view(HelpdeskView())
         print('Helpdesk wurde geladen')
 
     @commands.slash_command(description="Aktualisiere das Helpdesk menü")
@@ -17,7 +17,6 @@ class helpdesk(commands.Cog):
     async def helpdesk(self, ctx):
         channel = self.bot.get_channel(1120360814331838514)
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
-        file2 = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         color = 0x2596be
 
         embed_successful = discord.Embed(title='<:yes:1073716074140414013> | Erfolgreich gesendet',
@@ -35,14 +34,15 @@ class helpdesk(commands.Cog):
                         '<:G_:1158950908613361694><:S_:1158950928586657802><:v_:1158950963009310770>', color=color)
         embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
         await ctx.respond(file=file, embed=embed_successful, ephemeral=True)
-        await channel.send(file=file2, embed=embed, view=helpdesk_View())
+        await channel.send(file=file, embed=embed, view=HelpdeskView())
 
 
 def setup(bot):
-    bot.add_cog(helpdesk(bot))
+    bot.add_cog(HelpdeskCog(bot))
 
 
-class helpdesk_View(discord.ui.View):
+class HelpdeskView(discord.ui.View):
+    file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
     def __init__(self):
         super().__init__(timeout=None)
 
@@ -64,33 +64,28 @@ class helpdesk_View(discord.ui.View):
         color = 0x2596be
 
         if selected_value == "cm":
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             cm_embed = discord.Embed(title='Community Manager',
                                      description='Informationen und Rechte des Community Managers...', color=color)
             cm_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            await interaction.response.send_message(file=file, embed=cm_embed, ephemeral=True)
+            await interaction.response.send_message(file=self.file, embed=cm_embed, ephemeral=True)
 
         elif selected_value == "tl":
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             tl_embed = discord.Embed(title='Teamleitung', description='Informationen und Rechte der Teamleitung...',
                                      color=color)
             tl_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            await interaction.response.send_message(file=file, embed=tl_embed, ephemeral=True)
+            await interaction.response.send_message(file=self.file, embed=tl_embed, ephemeral=True)
 
         elif selected_value == "mod":
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             mod_embed = discord.Embed(title='Moderator', description='Du hast Moderator gewählt.', color=color)
             mod_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            await interaction.response.send_message(file=file, embed=mod_embed, ephemeral=True)
+            await interaction.response.send_message(file=self.file, embed=mod_embed, ephemeral=True)
 
         elif selected_value == "supp":
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             supp_embed = discord.Embed(title='Supporter', description='Du hast Supporter gewählt.', color=color)
             supp_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            await interaction.response.send_message(file=file, embed=supp_embed, ephemeral=True)
+            await interaction.response.send_message(file=self.file, embed=supp_embed, ephemeral=True)
 
         elif selected_value == "leave":
-            file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
             leave_embed = discord.Embed(title='Leave', description='Du hast Leave gewählt.', color=color)
             leave_embed.set_footer(text="Powered by gsv2.dev ⚡", icon_url="attachment://GSv_Logo.png")
-            await interaction.response.send_message(file=file, embed=leave_embed, ephemeral=True)
+            await interaction.response.send_message(file=self.file, embed=leave_embed, ephemeral=True)
