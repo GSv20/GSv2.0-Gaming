@@ -14,78 +14,10 @@ from .Adminsystem import connect_execute
 class ModSystem(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.timeout_role_id = 1184593699523526696
-        self.knast_role_id = self.timeout_role_id
         self.db_path = 'Data/team.db'
 
     async def cog_load(self):
         await self.create_database()
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        if not self.knastlist.is_running():
-            self.knastlist.start()
-            print('knastliste wurde geladen')
-
-    @tasks.loop(minutes=10)
-    async def knastlist(self):
-        guild = self.bot.get_guild(913082943495344179)
-        channel = guild.get_channel(1271573038034452541)  # channel id für den channel wo die knastliste reinkommen soll
-        users = await connect_execute(self.db_path, "SELECT uid, reason, mod_id FROM servers", datatype="All")
-        knast_members = [(guild.get_member(user_id), reason, guild.get_member(mod_id)) for user_id, reason, mod_id in
-                         users if guild.get_member(user_id)]
-
-        embed = discord.Embed(
-            title="Benutzer im Knast",
-            color=discord.Color.red())
-        if knast_members != []:
-            if users <= 25:
-                [embed.add_field(name=member.name,
-                                 value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}") for
-                 member, reason, mod in knast_members]
-            else:
-                embedcount = (int(len(users) / 25) + 1)
-                embedlist = []
-                rest = round(len(users) / embedcount)
-                for i in range(embedcount):
-                    if i == 1:
-                        fembed = embed
-                        [embed.add_field(name=member.name,
-                                         value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}")
-                         for member, reason, mod in knast_members[:rest]]
-                        [knast_members.remove(a) for a in knast_members[:rest]]
-                        embedlist.append(fembed)
-                    else:
-                        if len(knast_members) <= rest:
-                            nembed = discord.Embed(title="", description="", color=embed.color)
-                            [embed.add_field(name=member.name,
-                                             value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}")
-                             for member, reason, mod in knast_members]
-                            embedlist.append(nembed)
-                        else:
-                            nembed = discord.Embed(title="", description="", color=embed.color)
-                            [embed.add_field(name=member.name,
-                                             value=f"Grund: {reason}\n\nModerator: {mod.mention if mod else 'Unbekannt'}")
-                             for member, reason, mod in knast_members[:rest]]
-                            [knast_members.remove(a) for a in knast_members[:rest]]
-                            embedlist.append(nembed)
-        else:
-            embed.description = "Es befinden sich keine Benutzer im Knast."
-        try:
-            message = await channel.fetch_message()  # message id von der nachricht, die die liste beinhaltet
-            if not embedlist:
-                await message.edit(embed=embed)
-            else:
-                await message.edit(embeds=embedlist)
-        except discord.NotFound:
-            print("knastlist: nachricht gibts nich")
-
-    async def create_database(self):
-        try:
-            await connect_execute(self.db_path, '''CREATE TABLE IF NOT EXISTS servers (
-                                        uid INTEGER PRIMARY KEY,
-                                        reason TEXT,
-                                        mod_id INTEGER)''')
 
             await connect_execute(self.db_path, """
                     CREATE TABLE IF NOT EXISTS WarnList (
@@ -99,11 +31,6 @@ class ModSystem(commands.Cog):
             print("Datenbank und Tables erfolgreich erstellt.")
         except Exception as e:
             print(f"Fehler beim Erstellen der Datenbank: {e}")
-
-    async def cog_load(self):
-        await self.create_database()
-        if await self.bot.wait_until_ready():
-            self.knastlist.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -143,14 +70,6 @@ class ModSystem(commands.Cog):
         file = discord.File("img/GSv_Logo_ai.png", filename='GSv_Logo.png')
         squad = member.public_flags
         view = AdminView(member, reason)
-
-        knastuser = await connect_execute(self.db_path, "SELECT uid FROM servers WHERE uid = ?", (member.id,),
-                                          datatype="One")
-        if knastuser:
-            view.children[6].disabled = True
-        else:
-            view.children[7].disabled = True
-
         if squad.hypesquad_bravery:
             squad = "House of Bravery"
         elif squad.hypesquad_brilliance:
@@ -259,173 +178,7 @@ class ModSystem(commands.Cog):
             print(f"Exception raised in appcommand {ctx.command.name}:" if ctx.command else "Exception raised in View:")
             traceback.print_exception(type(error), error, error.__traceback__, limit=None, file=sys.stderr)
 
-    @slash_command(description="Rufe das Knast Menü auf")
-    async def knastmenu(self, ctx):
-        embed = discord.Embed(title="Knast Menü", description="Wähle hier aus was du machen möchtest",
-                              color=discord.Colour.random())
-        await ctx.respond(embed=embed, view=KnastMenu())
 
-
-class KnastMenu(discord.ui.View):
-    def __init__(self):
-        super().__init__()
-
-    @discord.ui.button(label="Besucherrollenantrag", style=discord.ButtonStyle.primary)
-    async def besuch_Button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="✔ | Anfrage Erfolgreich!",
-            description=f"{interaction.user.mention} deine Anfrage wurde an das team geschickt!",
-            color=discord.Color.green()
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-        embed = discord.Embed(
-            title="🚨 | Neue Anfrage",
-            description=f"{interaction.user.mention} möchte die besucher rolle haben!",
-            color=discord.Color.red()
-        )
-        self.disable_all_buttons()
-        channel = interaction.guild.get_channel(1251558364635332689)  # Replace with your channel ID
-        if channel:
-            await channel.send(embed=embed, view=BesuchButton(interaction.user, 1184593699523526696))
-
-    @discord.ui.button(label="Entlassungsantrag", style=discord.ButtonStyle.primary)
-    async def entlassung_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="✔ | Anfrage Erfolgreich!",
-            description=f"{interaction.user.mention} deine Anfrage wurde an das team geschickt!",
-            color=discord.Color.green()
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-        embed = discord.Embed(
-            title="🚨 | Neue Anfrage",
-            description=f"{interaction.user.mention} möchte Entlassen werden!",
-            color=discord.Color.red()
-        )
-        self.disable_all_buttons()
-        channel = interaction.guild.get_channel(1251558364635332689)  # Replace with your channel ID
-        if channel:
-            await channel.send(embed=embed, view=EntlassungButton(interaction.user, 1184593699523526696))
-
-    def disable_all_buttons(self):
-        for child in self.children:
-            if isinstance(child, discord.ui.Button):
-                child.disabled = True
-
-
-class BesuchButton(discord.ui.View):
-    def __init__(self, user, role):
-        super().__init__()
-        self.user = user
-        self.role = role
-
-    async def interaction_check(self, interaction: discord.Interaction):
-        if not interaction.user.guild_permissions.ban_members:
-            await interaction.response.send_message("Du hast nicht die erforderlichen Berechtigungen!", ephemeral=True)
-            return False
-        return True
-
-    @discord.ui.button(label="Annehmen", style=discord.ButtonStyle.success, custom_id="besuchen_button", emoji="✔")
-    async def besuchen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        member = interaction.guild.get_member(self.user.id)
-        role = interaction.guild.get_role(1184550310451101697)
-        if member and role:
-            await member.add_roles(role)
-            try:
-                await self.user.send("Deine Anfrage für die Entlassung wurde akzeptiert.")
-            except discord.Forbidden:
-                pass
-            embed = discord.Embed(
-                title="Anfrage",
-                description=f"{self.user.mention} hat eine Anfrage geschickt und wurde akzeptiert."
-            )
-            self.disable_all_buttons()
-            await interaction.message.edit(view=self)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            self.start_removal_task(member, role)
-
-    @discord.ui.button(label="Ablehnen", style=discord.ButtonStyle.red, custom_id="ablehnen_button", emoji="❌")
-    async def ablehnen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        try:
-            await self.user.send("Deine Anfrage für die Besucherrolle wurde abgelehnt.")
-        except discord.Forbidden:
-            pass
-        embed = discord.Embed(
-            title="Anfrage",
-            description=f"{self.user.mention} hat eine Anfrage geschickt und wurde abgelehnt."
-        )
-        self.disable_all_buttons()
-        await interaction.message.edit(view=self)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-    def disable_all_buttons(self):
-        for child in self.children:
-            if isinstance(child, discord.ui.Button):
-                child.disabled = True
-
-    def start_removal_task(self, member, role):
-        async def remove_role_after_delay():
-            await asyncio.sleep(1800)  # 30 minutes in seconds
-            await member.remove_roles(role)
-            try:
-                await member.send(f"Deine Besucherrolle wurde entfernt nach 30 Minuten.")
-            except discord.Forbidden:
-                pass
-
-        asyncio.create_task(remove_role_after_delay())
-
-
-class EntlassungButton(discord.ui.View):
-    def __init__(self, user, role):
-        super().__init__()
-        self.user = user
-        self.role = role
-
-    async def interaction_check(self, interaction: discord.Interaction):
-        if not interaction.user.guild_permissions.ban_members:
-            await interaction.response.send_message("Du hast nicht die erforderlichen Berechtigungen!", ephemeral=True)
-            return False
-        return True
-
-    @discord.ui.button(label="Annehmen", style=discord.ButtonStyle.success, custom_id="entlassung_annehmen", emoji="✔")
-    async def annehmen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        member = interaction.guild.get_member(self.user.id)
-        role = interaction.guild.get_role(1184593699523526696)
-        if member and role:
-            try:
-                await member.remove_roles(role)
-                await self.user.send("Deine Anfrage für die Entlassung wurde akzeptiert.")
-            except discord.Forbidden:
-                pass
-
-            embed = discord.Embed(
-                title="Anfrage akzeptiert",
-                description=f"{self.user.mention} wurde aus dem Knast entlassen."
-            )
-            self.disable_all_buttons()
-            await interaction.message.edit(view=self)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-
-    @discord.ui.button(label="Ablehnen", style=discord.ButtonStyle.danger, custom_id="entlassung_ablehnen", emoji="❌")
-    async def ablehnen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        try:
-            await self.user.send("Deine Anfrage für die Entlassung wurde abgelehnt.")
-        except discord.Forbidden:
-            pass
-
-        embed = discord.Embed(
-            title="Anfrage abgelehnt",
-            description=f"{self.user.mention} wurde nicht aus dem Knast entlassen."
-        )
-        self.disable_all_buttons()
-        await interaction.message.edit(view=self)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-    def disable_all_buttons(self):
-        for child in self.children:
-            if isinstance(child, discord.ui.Button):
-                child.disabled = True
 
 
 def setup(bot):
@@ -438,7 +191,6 @@ class AdminView(discord.ui.View):
         self.member = member
         self.reason = reason
         self.db_path = "Data/team.db"
-        self.knast_role_id = 1184593699523526696
         self.cooldown = CooldownMapping.from_cooldown(1, 300, commands.BucketType.member)
 
     @discord.ui.button(label="Warn", emoji="🚧")
@@ -632,49 +384,3 @@ class AdminView(discord.ui.View):
 
         await interaction.response.send_message(file=file, embed=embed, ephemeral=True)
 
-    @discord.ui.button(label="Knast", style=discord.ButtonStyle.danger)
-    async def knast_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        role = interaction.guild.get_role(self.knast_role_id)
-
-        if role is None:
-            await interaction.response.send_message("Die Knast-Rolle wurde nicht gefunden.", ephemeral=True)
-            return
-
-        embed = discord.Embed(
-            title="`✅` Erfolgreich!",
-            description=f"{self.member.mention} wurde in den Knast gesteckt\n"
-                        f"**weitere Informationen:**\n"
-                        f"`👮‍♂️` **Moderator:** {interaction.user}\n"
-                        f"`🚨` **Grund:** {self.reason}")
-
-        try:
-            await connect_execute(self.db_path, "INSERT INTO servers (uid, reason, mod_id) VALUES (?, ?, ?)",
-                                  (self.member.id, self.reason, interaction.user.id))
-
-            await self.member.add_roles(role)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-        except Exception as e:
-            await interaction.response.send_message(f"Ein Fehler ist aufgetreten: {e}", ephemeral=True)
-
-    @discord.ui.button(label="knastentlassen", style=discord.ButtonStyle.success)
-    async def entlassung_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="`✅` Erfolgreich!",
-            description="User wurde entlassen!\n\n"
-                        "**Weitere infos:**\n"
-                        f"`👮‍♂️` **Moderator:** {interaction.user.name}",
-            color=discord.Color.green()
-        )
-        try:
-            await connect_execute(self.db_path, "DELETE FROM servers WHERE uid = ?", (self.member.id,))
-
-            role = interaction.guild.get_role(self.knast_role_id)
-
-            if role is None:
-                await interaction.response.send_message("Die Knast-Rolle wurde nicht gefunden.", ephemeral=True)
-                return
-
-            await self.member.remove_roles(role)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-        except Exception as e:
-            await interaction.response.send_message(f"Ein Fehler ist aufgetreten: {e}", ephemeral=True)
